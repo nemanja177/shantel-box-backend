@@ -22,6 +22,14 @@ public interface BodoviRepository  extends JpaRepository<Bodovi, Integer>{
 	
 	Bodovi findBodoviByKorisnik(String username);
 	
+	Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, Date date);
+	
 	List<Bodovi> findBodoviByDatumDobijanja(Date date);
+	
+	List<Bodovi> findBySpecijalnaNagradaIsNullOrSpecijalnaNagradaNot(String nagrada);
+	
+	List<Bodovi> findBySpecijalnaNagradaIsNull();
+	
+	List<Bodovi> findBySpecijalnaNagrada(String nagrada);
 	
 }

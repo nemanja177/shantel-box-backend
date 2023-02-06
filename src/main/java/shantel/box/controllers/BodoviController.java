@@ -1,11 +1,7 @@
 package shantel.box.controllers;
 
 import java.io.IOException;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -16,8 +12,6 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +22,15 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import shantel.box.dto.PoslednjiBodovi;
 import shantel.box.model.Bodovi;
+import shantel.box.model.BonusNagrade;
 import shantel.box.model.Korisnik;
 import shantel.box.services.BodoviService;
+import shantel.box.services.BonusNagradeService;
 import shantel.box.services.KorisnikService;
 
 
@@ -43,6 +40,9 @@ public class BodoviController {
 	
 	@Autowired
 	private BodoviService bodoviService;
+	
+	@Autowired
+	private BonusNagradeService bonusNagradeService;
 	
 	@Autowired
 	private KorisnikService korisnikService;
@@ -205,12 +205,14 @@ public class BodoviController {
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
 		Calendar now = Calendar.getInstance();
 		int month = now.get(Calendar.MONTH);
+		if ( month == 0 ) {
+			month = 12;
+		}
 		for ( Korisnik korisnik : sviKorisnici) {
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> mesecniBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
 				if ((bod.getDatumDobijanja().getMonth()) == (month - 1)) {
-//					System.out.println("LAVOR " + bod);
 					mesecniBodovi.add(bod);
 				}
 			}
@@ -234,14 +236,22 @@ public class BodoviController {
 //		List<KorisnikBodovi> korisnikBodovi = korisnikBodoviService.mergeAll();
 //		List<Korisnik> sviKorisnici = korisnikService.findAll();
 		
-		List<Korisnik> korisnici = new ArrayList<>();
-		
 	
 		
 //		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 //		Date date = new Date();
 //		System.out.println("===========BODOVI===========");
-		List<Bodovi> subListBodovi = sviBodovi.subList(0, 5);
+		
+		List<Bodovi> betterListBodovi = bodoviService.findWithoutSpecificSpecijalnaNagrada("Poeni");
+		System.out.println(betterListBodovi.size());
+		Collections.sort(betterListBodovi);
+		Collections.reverse(betterListBodovi);
+		List<Bodovi> subListBodovi = betterListBodovi.subList(0, 5);
+//		for ( Bodovi bod : betterListBodovi ) {
+//			System.out.println("-------------------LISTA BODOVA-------------------");
+//			System.out.println(bod);
+//		}
+//		List<Bodovi> subListSredjeniBodovi = new ArrayList<>();
 		List<PoslednjiBodovi> sredjeniBodovi = new ArrayList<>();
 //		List<Bodovi> sredjeniBodovi = new ArrayList<Bodovi>();
 		for ( Bodovi bod: subListBodovi) {
@@ -356,29 +366,77 @@ public class BodoviController {
 		System.out.println("KORISNIK: " + korisnik.getUsername());
 //		System.out.println("SESIJA PROVERE: " + session.getId());
 		Bodovi poslednjiBod = null;
+		boolean canOpen = false;
 		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
 		Collections.sort(sortedList);
 		for( Bodovi bod : sortedList ) {
-			poslednjiBod = bod;
+			if ( bod.getSpecijalnaNagrada() == null || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")) {
+				poslednjiBod = bod;
+//				System.out.println(poslednjiBod);
+			}
 //			System.out.println(poslednjiBod);
 //			break;
 		}
+		System.out.println(poslednjiBod);
 		Date datum = new Date();
 //		System.out.println("KORISNIK: " + formatter.format(poslednjiBod.getDatumDobijanja()));
 //		System.out.println("DATUM: " + formatter.format(datum));
-		if ( poslednjiBod == null ) 
-			return new ResponseEntity<>(true, HttpStatus.OK);
-		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
-//			System.out.println("MORE");
+		
+		if ( poslednjiBod == null) {
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		}
+		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
+			try {
+				if ( bonusNagrada.getReceiver() != null ) {
+					canOpen = true;
+				} else {
+					canOpen = false;
+				}
+			} catch (Exception e) {
+				canOpen = true;
+			}
+			
+		} else {
+			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
+				canOpen = true; //verovatno false ali videcemo
+			}
+			if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
+				canOpen = true;
+			} else {
+				canOpen = false;
+			}
+		}
+		
+		
+		
+		///stariiiiiiiii
+//		if ( poslednjiBod == null ) 
+//			return new ResponseEntity<>(true, HttpStatus.OK);
+//		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+//			return new ResponseEntity<>(true, HttpStatus.OK);
+//		} 
+//		if ( formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+//			if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")) {
+//				System.out.println("MOZE SE OTVORITI KUTIJA, POENI DODELJENI");
+//				return new ResponseEntity<>(true, HttpStatus.OK);
+//			}
+////			System.out.println("NE MOZE SE OTVORITI KUTIJA, POENI NISU DODELJENI");
+////			return new ResponseEntity<>(false, HttpStatus.OK);	
+//		}
+//		BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik.getId());
+//		System.out.println("MRTVA BONUS NAGRADAAAAAAAAAAAAA " + bonusNagrada);
+//		if (bonusNagrada.getRandomSelectedUsers() != null ) {
+//			System.out.println("MOZE SE OTVORITI KUTIJA");
+//			return new ResponseEntity<>(true, HttpStatus.OK);
+//		}
 //		else {
 //			System.out.println("NEMERE");
 //		}
 //		HttpHeaders responseHeaders = new HttpHeaders();
 //		responseHeaders.set("Access-Control-Allow-Origin", "https://bigalslist.com");
-		return new ResponseEntity<>(false, HttpStatus.OK);
+		return new ResponseEntity<>(canOpen, HttpStatus.OK);
 	}
 	
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
@@ -388,14 +446,14 @@ public class BodoviController {
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
 
-		int brojBodova = rand.nextInt(100) + 1;
-		int specijalanBroj = rand.nextInt(1000) + 1;
+		int brojBodova = rand.nextInt(300) - 100;
+		int specijalanBroj = rand.nextInt(800) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
-		if ( korisnik.getUsername().equals("djura")) {
-			specijalanBroj = 500;
-		}
+//		if ( korisnik.getUsername().equals("")) {
+//			specijalanBroj = 500;
+//		}
 		
 		Date datum = new Date();
 		bod.setDatumDobijanja(datum);
@@ -423,13 +481,24 @@ public class BodoviController {
 //			bod.setSpecijalnaNagrada("Slobodan Dan");
 //		}
 		bod.setKorisnik(korisnik);
+		
+		String bonusType = "Poeni";
+		int bonusValue = 10;
+		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, datum);
 		bodoviService.save(bod);
+		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);
+		bonusNagradeService.save(bonusNagrada);
 		
 		HttpHeaders responseHeaders = new HttpHeaders();
 		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		return new ResponseEntity<>(bod, HttpStatus.OK);
 	}
-	
+		
+//	public int getBodId(Bodovi bod) { 
+//		Bodovi poslednjiBod = bodoviService.findBodoviByKorisnikAndDatumDobijanja(bod.getKorisnik().getUsername(), bod.getDatumDobijanja());
+//		return poslednjiBod.getId();
+//	}
+
 	@GetMapping(value = "/random")
 	public ResponseEntity<List<Integer>> random() {
 		List<Integer> brojevi = new ArrayList<Integer>();

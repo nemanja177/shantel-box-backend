@@ -37,9 +37,28 @@ public class BodoviServiceImpl implements BodoviService {
 		return bodoviRepository.findBodoviByDatumDobijanja(datum);
 	}
 
+	@Override
+	public List<Bodovi> findWithoutSpecificSpecijalnaNagrada(String nagrade) {
+		return bodoviRepository.findBySpecijalnaNagradaIsNullOrSpecijalnaNagradaNot(nagrade);
+	}
 //	@Override
 //	public List<Bodovi> findLast() {
 //		return bodoviRepository.mergeAll();
 //	}
+
+	@Override
+	public List<Bodovi> findBySpecijalnaNagradaIsNull() {
+		return bodoviRepository.findBySpecijalnaNagradaIsNull();
+	}
+
+	@Override
+	public List<Bodovi> findBySpecijalnaNagrada(String nagrada) {
+		return bodoviRepository.findBySpecijalnaNagrada(nagrada);
+	}
+
+	@Override
+	public Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, Date date) {
+		return bodoviRepository.findBodoviByKorisnikAndDatumDobijanja(username, date);
+	}
 
 }

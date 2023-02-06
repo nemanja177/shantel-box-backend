@@ -14,8 +14,16 @@ public interface BodoviService {
 	
 	Bodovi findBodoviByKorisnik(String username);
 	
+	Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, Date date);
+	
 	List<Bodovi> findAll();
 	
 	List<Bodovi> findBodoviByDatumDobijanja(Date datum);
+	
+	List<Bodovi> findWithoutSpecificSpecijalnaNagrada(String nagrada);
+	
+	List<Bodovi> findBySpecijalnaNagradaIsNull();
+	
+	List<Bodovi> findBySpecijalnaNagrada(String nagrada);
 	
 }

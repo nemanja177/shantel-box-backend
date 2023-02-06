@@ -93,7 +93,7 @@ public class AuthenticationController {
 //			return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
 			
 		} else {
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 //			throw new ResourceConflictException(user.getId(), "User blocked!");
 			
 		}
@@ -143,6 +143,37 @@ public class AuthenticationController {
 			System.out.println("KORISNIK NIJE VALIDAN");
 			return new ResponseEntity<>(false, HttpStatus.OK);
 		}
+	}
+	
+	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	@GetMapping(value = "/lock")
+	public ResponseEntity<Boolean> lockUsers(HttpSession session) {
+		List<Korisnik> sviKorisnici = korisnikService.findAll();
+		try {
+			for ( Korisnik korisnik: sviKorisnici) {
+				korisnik.setDozvoljen(false);
+				korisnikService.save(korisnik);
+			}
+			return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Boolean>(false, HttpStatus.OK);
+		}
+		
+	}
+	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	@GetMapping(value = "/unlock")
+	public ResponseEntity<Boolean> unlockUsers(HttpSession session) {
+		List<Korisnik> sviKorisnici = korisnikService.findAll();
+		try {
+			for ( Korisnik korisnik: sviKorisnici) {
+				korisnik.setDozvoljen(true);
+				korisnikService.save(korisnik);
+			}
+			return new ResponseEntity<Boolean>(true, HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<Boolean>(false, HttpStatus.OK);
+		}
+		
 	}
 	
 //	@GetMapping("/test")
