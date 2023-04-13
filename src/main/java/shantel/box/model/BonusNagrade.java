@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "bonusNagrade")
-public class BonusNagrade {
+public class BonusNagrade implements Comparable<BonusNagrade>{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="bonus_id", unique=true, nullable=false)
@@ -173,6 +173,18 @@ public class BonusNagrade {
 		return "BonusNagrade [id=" + id + ", sender=" + sender.getUsername() + ", receiver=" + receiver + ", bonusType=" + bonusType
 				+ ", bonusValue=" + bonusValue + ", date=" + date + ", randomSelectedUsers=" + randomSelectedUsers
 				+ "]";
+	}
+
+
+	@Override
+	public int compareTo(BonusNagrade o) {
+		if (this.id == o.id) {
+            return 0;
+        } else if (this.id > o.id) {
+            return 1;
+        } else {
+            return -1;
+        }
 	}
 
 	

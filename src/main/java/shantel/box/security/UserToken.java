@@ -22,7 +22,7 @@ public class UserToken {
 		@Value("EQ8UuS3fVSKvxXDusPeA7w5ryy333zCe")
 		public String SECRET;
 
-		@Value("5000000")
+		@Value("1200000")
 		private int EXPIRES_IN;
 
 		

@@ -358,15 +358,19 @@ public class BodoviController {
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/check")
 	public ResponseEntity<Boolean> canOpen(HttpSession session) {
-//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		
 		
 		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
 		System.out.println("KORISNIK: " + korisnik.getUsername());
 //		System.out.println("SESIJA PROVERE: " + session.getId());
 		Bodovi poslednjiBod = null;
 		boolean canOpen = false;
+		
+		/* PREBACENO U ZASEBNU FUNCKIJU 
+		 * 
+		 * /- public Bodovi getLastBod -/
+		 * 
 		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
 		Collections.sort(sortedList);
@@ -377,15 +381,22 @@ public class BodoviController {
 			}
 //			System.out.println(poslednjiBod);
 //			break;
-		}
-		System.out.println(poslednjiBod);
-		Date datum = new Date();
+		}*/
+		
 //		System.out.println("KORISNIK: " + formatter.format(poslednjiBod.getDatumDobijanja()));
 //		System.out.println("DATUM: " + formatter.format(datum));
-		
+		poslednjiBod = getLastBod(korisnik);
 		if ( poslednjiBod == null) {
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		}
+		canOpen = checker(korisnik, poslednjiBod);
+		/* PREBACENO U ZASEBNU FUNKCIJU 
+		 * /- public boolean checker -/
+		 * 
+		 * Date datum = new Date();
+		 * 
+		 * SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		 * 
 		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
 			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
 			try {
@@ -407,7 +418,7 @@ public class BodoviController {
 			} else {
 				canOpen = false;
 			}
-		}
+		}*/ 
 		
 		
 		
@@ -439,6 +450,73 @@ public class BodoviController {
 		return new ResponseEntity<>(canOpen, HttpStatus.OK);
 	}
 	
+	public Bodovi getLastBod(Korisnik korisnik) {
+		Bodovi poslednjiBod = null;
+		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
+		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
+		Collections.sort(sortedList);
+		for( Bodovi bod : sortedList ) {
+			if ( bod.getSpecijalnaNagrada() == null || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")) {
+				poslednjiBod = bod;
+			}
+		}
+		return poslednjiBod;
+	}
+	 
+	public boolean checker(Korisnik korisnik, Bodovi poslednjiBod) {
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		Date datum = new Date();
+		boolean canOpen = false;
+		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
+			try {
+				if ( bonusNagrada.getReceiver() != null ) {
+					canOpen = true;
+				} else {
+					canOpen = false;
+				}
+			} catch (Exception e) {
+				canOpen = true;
+			}
+			
+		} else {
+			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
+				canOpen = true; //verovatno false ali videcemo
+			}
+			try {
+				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
+					canOpen = true;
+				}
+			} catch (Exception e) {
+				canOpen = false;
+			}
+			
+		}
+		return canOpen;
+	}
+	
+	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	@GetMapping( value = "/userswhodidntnopen")
+	public ResponseEntity<List<Korisnik>> getUsersWhoDidntOpen(HttpSession session) {
+		
+		List<Korisnik> sviKorisnici = korisnikService.findAll();
+		List<Korisnik> didntOpen = new ArrayList<>();
+		
+		for(Korisnik korisnik: sviKorisnici) {
+			Bodovi poslednjiBod = getLastBod(korisnik);
+			if ( poslednjiBod == null) {
+				didntOpen.add(korisnik);
+			} else if ( checker(korisnik, poslednjiBod)){	
+				didntOpen.add(korisnik);
+			}
+		}
+		
+		for ( Korisnik korisnik: didntOpen) {
+			System.out.println("PICKE KOJE NISU OTVORILE KUTIJU: " + korisnik);
+		}
+		
+		return new ResponseEntity<List<Korisnik>>(didntOpen, HttpStatus.OK);
+	}
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping
 	public ResponseEntity<Bodovi> setBodovi(HttpSession session) {
@@ -446,7 +524,8 @@ public class BodoviController {
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
 
-		int brojBodova = rand.nextInt(300) - 100;
+//		int brojBodova = rand.nextInt(300) - 100; // normal
+		int brojBodova = rand.nextInt(100) + 100;
 		int specijalanBroj = rand.nextInt(800) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);

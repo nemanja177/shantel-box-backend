@@ -122,10 +122,12 @@ public class Bodovi implements Comparable<Bodovi>{
 		this.specijalnaNagrada = specijalnaNagrada;
 	}
 
+	
+
 	@Override
 	public String toString() {
-		return "Bodovi [id=" + id + ", brojBodova=" + brojBodova + ", datumDobijanja=" + datumDobijanja + ", korisnik="
-				+ korisnik + "]";
+		return "Bodovi [id=" + id + ", brojBodova=" + brojBodova + ", datumDobijanja=" + datumDobijanja
+				+ ", specijalnaNagrada=" + specijalnaNagrada + ", korisnik=" + korisnik.getUsername() + "]";
 	}
 
 	@Override

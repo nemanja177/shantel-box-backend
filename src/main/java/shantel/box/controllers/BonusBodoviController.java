@@ -122,11 +122,11 @@ public class BonusBodoviController {
 		return new ResponseEntity<Boolean>(false, HttpStatus.OK);
 	}
 	
-	public Korisnik findCurrentKorisnik(HttpSession session) {
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
-		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
-		return korisnik;
-	}
+//	public Korisnik findCurrentKorisnik(HttpSession session) {
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+//		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
+//		return korisnik;
+//	}
 	
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/chosen")
@@ -134,7 +134,9 @@ public class BonusBodoviController {
 		Korisnik receiver = korisnikService.findKorisnikById(id);
 		System.out.println("--------------------------------------------------------------------");
 		System.out.println("RECEIVER: " + receiver);
-		Korisnik sender = findCurrentKorisnik(session);
+		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+		Korisnik sender = korisnikService.findKorisnikByUsername(username);
+//		Korisnik sender = findCurrentKorisnik(session);
 		
 		
 		try {
@@ -172,46 +174,70 @@ public class BonusBodoviController {
 	
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allDailyBonuses")
-	public ResponseEntity<List<Korisnik>> getAllDailyBonus() {
+	public ResponseEntity<List<BonusNagradeDTO>> getAllDailyBonus() {
+		
 		Date date = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		List<Korisnik> korisnici = new ArrayList<>();
-		List<Korisnik> sviKorisnici = korisnikService.findAll();
-		for ( Korisnik korisnik : sviKorisnici) {
-//			System.out.println(korisnik.getBodovi());
-			Set<Bodovi> bodovi = korisnik.getBodovi();
-			Set<Bodovi> bonusBodovi = new HashSet<>();
-			for ( Bodovi bod: bodovi ) {
-//				System.out.println("SIZE: " + korisnik.getBodovi());
-//				System.out.println("bod" + bod);
-				if ( formatter.format(date).equals(formatter.format(bod.getDatumDobijanja()))) {
-					try {
-						if (bod.getSpecijalnaNagrada().equals("Poeni")) {
-							bonusBodovi.add(bod);
-						}
-					} catch (Exception e) {
-						continue;
-					}
-					
-//					System.out.println("======== BONUS BOD ======" + bod);
-				} 
-//					else {
-//					bodovi.remove(bod);
-//					System.out.println("SIZE: " + korisnik.getBodovi().size());
-////					if( korisnik.getBodovi().size() == 0) {
-//////						System.out.println("SIZE: " + korisnik.getBodovi().size());
-////						break;
-////					}
-//				}
-			}
-			
-			korisnik.setBodovi(bonusBodovi);
-			korisnici.add(korisnik);
-			Collections.sort(korisnici);
-			Collections.reverse(korisnici);
+		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
+		Collections.sort(sveBonusNagrade);
+		Collections.reverse(sveBonusNagrade);
+		List<BonusNagradeDTO> dtoList = new ArrayList<>();
+		for (BonusNagrade nagrade: sveBonusNagrade) {
+			if ( formatter.format(nagrade.getDate()).equals(formatter.format(date))) {
+				dtoList.add(new BonusNagradeDTO(nagrade));
+			}	
 		}
+//		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 7);
+		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 		
-		return new ResponseEntity<>(korisnici,HttpStatus.OK);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+//		Date date = new Date();
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//		List<Korisnik> korisnici = new ArrayList<>();
+//		List<Korisnik> sviKorisnici = korisnikService.findAll();
+//		for ( Korisnik korisnik : sviKorisnici) {
+////			System.out.println(korisnik.getBodovi());
+//			Set<Bodovi> bodovi = korisnik.getBodovi();
+//			Set<Bodovi> bonusBodovi = new HashSet<>();
+//			for ( Bodovi bod: bodovi ) {
+////				System.out.println("SIZE: " + korisnik.getBodovi());
+////				System.out.println("bod" + bod);
+//				if ( formatter.format(date).equals(formatter.format(bod.getDatumDobijanja()))) {
+//					try {
+//						if (bod.getSpecijalnaNagrada().equals("Poeni")) {
+//							bonusBodovi.add(bod);
+//						}
+//					} catch (Exception e) {
+//						continue;
+//					}
+//					
+////					System.out.println("======== BONUS BOD ======" + bod);
+//				} 
+////					else {
+////					bodovi.remove(bod);
+////					System.out.println("SIZE: " + korisnik.getBodovi().size());
+//////					if( korisnik.getBodovi().size() == 0) {
+////////						System.out.println("SIZE: " + korisnik.getBodovi().size());
+//////						break;
+//////					}
+////				}
+//			}
+//			
+//			korisnik.setBodovi(bonusBodovi);
+//			korisnici.add(korisnik);
+//			Collections.sort(korisnici);
+//			Collections.reverse(korisnici);
+//		}
+//		
+//		return new ResponseEntity<>(korisnici,HttpStatus.OK);
 //		List<BonusNagrade> allBonusNagrade = bonusNagradeService.findByReceiverIsNotNull();
 //		List<BonusNagrade> returnList = new ArrayList<>();
 //		 
@@ -222,6 +248,29 @@ public class BonusBodoviController {
 //		}
 //		
 //		return new ResponseEntity<List<BonusNagrade>>(returnList, HttpStatus.OK);
+	}
+	
+	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	@GetMapping(value = "/allYesterdayBonuses")
+	public ResponseEntity<List<BonusNagradeDTO>> getAllYesterdayBonuses() {
+
+		Calendar now = Calendar.getInstance();
+		int brojDana = now.get(Calendar.DAY_OF_YEAR);
+		
+		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
+		Collections.sort(sveBonusNagrade);
+		Collections.reverse(sveBonusNagrade);
+		
+		List<BonusNagradeDTO> dtoList = new ArrayList<>();
+		
+		for (BonusNagrade nagrade: sveBonusNagrade) {
+			now.setTime(nagrade.getDate());
+			if ( now.get(Calendar.DAY_OF_YEAR) == (brojDana - 1)) {
+				dtoList.add(new BonusNagradeDTO(nagrade));
+			}	
+		}
+		
+		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -263,14 +312,15 @@ public class BonusBodoviController {
 		Date date = new Date();
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
+		Collections.sort(sveBonusNagrade);
+		Collections.reverse(sveBonusNagrade);
 		List<BonusNagradeDTO> dtoList = new ArrayList<>();
 		for (BonusNagrade nagrade: sveBonusNagrade) {
-			if ( formatter.format(nagrade.getDate()).equals(formatter.format(date))) {
+//			if ( formatter.format(nagrade.getDate()).equals(formatter.format(date))) {
 				dtoList.add(new BonusNagradeDTO(nagrade));
-			}	
+//			}	
 		}
-		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 10);
-		
+		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 7);
 		return new ResponseEntity<>(subListBonusBodovi, HttpStatus.OK);
 	}
 }
