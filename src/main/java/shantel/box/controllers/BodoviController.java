@@ -524,8 +524,8 @@ public class BodoviController {
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
 
-//		int brojBodova = rand.nextInt(300) - 100; // normal
-		int brojBodova = rand.nextInt(100) + 100;
+		int brojBodova = rand.nextInt(300) - 100; // normal
+//		int brojBodova = rand.nextInt(100) + 100;
 		int specijalanBroj = rand.nextInt(800) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -562,7 +562,7 @@ public class BodoviController {
 		bod.setKorisnik(korisnik);
 		
 		String bonusType = "Poeni";
-		int bonusValue = 10;
+		int bonusValue = 20;
 		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, datum);
 		bodoviService.save(bod);
 		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);

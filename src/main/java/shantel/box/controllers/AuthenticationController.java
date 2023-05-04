@@ -147,9 +147,12 @@ public class AuthenticationController {
 			return new ResponseEntity<>(false, HttpStatus.OK);
 		}		
 	}
-	
-	@GetMapping(value = "/validate2")
+	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	@PostMapping(value = "/validate2")
 	public ResponseEntity<?> isTokenValid(@RequestParam String token, @AuthenticationPrincipal Korisnik korisnik) {
+		
+		System.out.println("LOGIN TOKEN: " + token);
+		System.out.println("KORISNIK IZ TOKENA: " + korisnik.getUsername());
 		try {
 			boolean isValid = tokenUtils.validateToken(token, korisnik);
 			return ResponseEntity.ok(isValid);
