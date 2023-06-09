@@ -242,7 +242,8 @@ public class BodoviController {
 //		Date date = new Date();
 //		System.out.println("===========BODOVI===========");
 		
-		List<Bodovi> betterListBodovi = bodoviService.findWithoutSpecificSpecijalnaNagrada("Poeni");
+		List<Bodovi> betterListBodovi = bodoviService.findWithoutSpecificSpecijalnaNagrada("Poeni"); // izmena
+//		List<Bodovi> betterListBodovi = bodoviService.findBySpecijalnaNagradaIsNull();
 		System.out.println(betterListBodovi.size());
 		Collections.sort(betterListBodovi);
 		Collections.reverse(betterListBodovi);
@@ -456,7 +457,7 @@ public class BodoviController {
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
 		Collections.sort(sortedList);
 		for( Bodovi bod : sortedList ) {
-			if ( bod.getSpecijalnaNagrada() == null || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")) {
+			if ( bod.getSpecijalnaNagrada() == null) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
 				poslednjiBod = bod;
 			}
 		}
@@ -482,6 +483,8 @@ public class BodoviController {
 		} else {
 			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
 				canOpen = true; //verovatno false ali videcemo
+			} else {
+				canOpen = false;
 			}
 			try {
 				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
@@ -489,8 +492,7 @@ public class BodoviController {
 				}
 			} catch (Exception e) {
 				canOpen = false;
-			}
-			
+			} 
 		}
 		return canOpen;
 	}
@@ -530,6 +532,7 @@ public class BodoviController {
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
+		
 //		if ( korisnik.getUsername().equals("")) {
 //			specijalanBroj = 500;
 //		}
