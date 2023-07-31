@@ -256,8 +256,8 @@ public class BodoviController {
 		List<PoslednjiBodovi> sredjeniBodovi = new ArrayList<>();
 //		List<Bodovi> sredjeniBodovi = new ArrayList<Bodovi>();
 		for ( Bodovi bod: subListBodovi) {
-			System.out.println("------------BOD-----------");
-			System.out.println("BOD: " + bod);
+//			System.out.println("------------BOD-----------");
+//			System.out.println("BOD: " + bod);
 			Korisnik korisnik = korisnikService.findKorisnikById(bod.getKorisnik().getId());
 			PoslednjiBodovi poslednjiBod = new PoslednjiBodovi();
 			poslednjiBod.setKorisnik(korisnik);
@@ -513,9 +513,9 @@ public class BodoviController {
 			}
 		}
 		
-		for ( Korisnik korisnik: didntOpen) {
-			System.out.println("PICKE KOJE NISU OTVORILE KUTIJU: " + korisnik);
-		}
+//		for ( Korisnik korisnik: didntOpen) {
+//			System.out.println("PICKE KOJE NISU OTVORILE KUTIJU: " + korisnik);
+//		}
 		
 		return new ResponseEntity<List<Korisnik>>(didntOpen, HttpStatus.OK);
 	}
@@ -526,8 +526,9 @@ public class BodoviController {
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
 
-		int brojBodova = rand.nextInt(300) - 100; // normal
-//		int brojBodova = rand.nextInt(100) + 100;
+//		int brojBodova = rand.nextInt(300) - 100; // normal
+//		int brojBodova = rand.nextInt(100) + 100; // od 100 do 200
+		int brojBodova = rand.nextInt(200); // samo do 200, bez minusa
 		int specijalanBroj = rand.nextInt(800) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -565,10 +566,10 @@ public class BodoviController {
 		bod.setKorisnik(korisnik);
 		
 		String bonusType = "Poeni";
-		int bonusValue = 20;
+		int bonusValue = 30;
 		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, datum);
 		bodoviService.save(bod);
-		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);
+//		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);
 		bonusNagradeService.save(bonusNagrada);
 		
 		HttpHeaders responseHeaders = new HttpHeaders();

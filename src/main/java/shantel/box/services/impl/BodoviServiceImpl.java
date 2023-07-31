@@ -6,12 +6,14 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import shantel.box.model.Bodovi;
 import shantel.box.repository.BodoviRepository;
 import shantel.box.services.BodoviService;
 
 @Service
+@Transactional
 public class BodoviServiceImpl implements BodoviService {
 	
 	@Autowired

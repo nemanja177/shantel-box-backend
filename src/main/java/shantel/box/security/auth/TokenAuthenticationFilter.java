@@ -14,6 +14,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import shantel.box.security.UserToken;
 
+
 public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
 	private UserToken tokenUtils;

@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import javax.servlet.http.HttpSession;
+
+import org.hibernate.Hibernate;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import shantel.box.dto.PoklonKodDTO;
 import shantel.box.model.Bodovi;
@@ -46,48 +51,57 @@ public class GiftCodeController {
 	@Autowired
 	private BodoviService bodoviService;
 	
-	@SuppressWarnings("null")
+//	@SuppressWarnings("null")
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/getCode")
-	public ResponseEntity<PoklonKodDTO> getKod(@AuthenticationPrincipal Korisnik sender) {
+	@JsonIgnore
+	public ResponseEntity<PoklonKodDTO> getKod(@AuthenticationPrincipal Korisnik sender, HttpSession session) {
 		
 		List<PoklonKod> poklonKodovi = poklonKodService.findPoklonKodBySenderId(sender.getId());
-		PoklonKod poklonKod = null;
+		PoklonKod poklonKod;
 		if ( poklonKodovi.size() > 0 ) {
 			 poklonKod = poklonKodovi.get(poklonKodovi.size() - 1);
-		} 
+		} else {
+			poklonKod = null;
+		}
+//		Hibernate.initialize(sender.getBodovi());
 //		else {
 //			poklonKod = poklonKodovi.get(poklonKodovi.size());
 //		}
-		
+		System.out.println("POKLON KOD ======> " + poklonKod);
 		// stavlja da poklon kod nije validan ukoliko je trenutan datum drugaciji do datuma generisanja
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date date = new Date();
 		
-		if ( poklonKod != null && poklonKod.getActivatedDate() == null && formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
+		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
 			poklonKod.setIsValid(false);
+			poklonKodService.save(poklonKod);
+			System.out.println("INFO FIRST: " + poklonKod);
 		}
 		
-		if ( poklonKod == null || poklonKod.getActivatedDate() != null && poklonKod.getIsValid() == false) {
-			List<Korisnik> sviKorisnici = korisnikService.findAll(); 
-			Random rand = new Random();
-			int randomUser = rand.nextInt(sviKorisnici.size());
-			Korisnik receiver = sviKorisnici.get(randomUser);
-			
-			List<String> codesList = readCode();
-			String code = generateCode(codesList);
-			
-			Random rand2 = new Random();
-			int randomPoints = rand2.nextInt(31) - 10;
-			
-			Date datumDobijanja = new Date();
-			
-			PoklonKod newPoklonKod = new PoklonKod(sender, receiver, code, randomPoints, datumDobijanja, true);
-			poklonKodService.save(newPoklonKod);
-			return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(newPoklonKod), HttpStatus.CREATED);
-		} else {
-			return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(poklonKod), HttpStatus.OK);
-		}
+		if ( poklonKod == null || poklonKod.getIsValid() == false && poklonKod.getActivatedDate() == null) {
+			System.out.println("INFO SECOND: " + poklonKod);
+			if (!formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))){
+				List<Korisnik> sviKorisnici = korisnikService.findAll(); 
+				System.out.println("INFO THIRD: " + poklonKod);
+				Random rand = new Random();
+				int randomUser = rand.nextInt(sviKorisnici.size());
+				Korisnik receiver = sviKorisnici.get(randomUser);
+				
+				List<String> codesList = readCode();
+				String code = generateCode(codesList);
+				
+				Random rand2 = new Random();
+				int randomPoints = rand2.nextInt(31) - 10;
+				
+				Date datumDobijanja = new Date();
+				
+				PoklonKod newPoklonKod = new PoklonKod(sender, receiver, code, randomPoints, datumDobijanja, true);
+				poklonKodService.save(newPoklonKod);
+				return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(newPoklonKod), HttpStatus.OK);
+			} 
+		} 
+		return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(poklonKod), HttpStatus.OK);
 	}
 	
 	

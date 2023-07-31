@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import shantel.box.model.Authority;
 import shantel.box.model.Korisnik;
@@ -17,6 +18,7 @@ import shantel.box.services.AuthorityService;
 import shantel.box.services.KorisnikService;
 
 @Service
+@Transactional
 public class KorisnikServiceImpl implements KorisnikService, UserDetailsService {
 	
 	@Autowired

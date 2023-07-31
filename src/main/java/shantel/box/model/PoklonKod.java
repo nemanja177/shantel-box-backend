@@ -23,13 +23,13 @@ public class PoklonKod {
 	@Column(name="bonus_id", unique=true, nullable=false)
 	private Integer id;
 	
-	@OneToOne(fetch = FetchType.EAGER, optional = false)
-	@JoinColumn(name = "sender_id", nullable = false, unique = false)
+	@OneToOne(fetch = FetchType.EAGER, optional = true)
+	@JoinColumn(name = "sender_id", nullable = false)
 	@JsonIgnore
 	private Korisnik sender;
 	
 	@OneToOne(fetch = FetchType.EAGER, optional = true)
-	@JoinColumn(name = "receiver_id", nullable = true)
+	@JoinColumn(name = "receiver_id", nullable = false)
 	@JsonIgnore
 	private Korisnik receiver;
 	

@@ -31,6 +31,7 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	
 	private static final long serialVersionUID = 1L;
 
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="korisnik_id", unique=true, nullable=false)
