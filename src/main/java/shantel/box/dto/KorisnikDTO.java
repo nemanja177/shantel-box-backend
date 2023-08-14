@@ -13,6 +13,7 @@ public class KorisnikDTO implements Serializable{
 	private String email;
 	private String password;
 	private boolean dozvoljen;
+	private String slika;
 	
 	public KorisnikDTO(Korisnik korisnik) {
 		id = korisnik.getId();
@@ -22,6 +23,7 @@ public class KorisnikDTO implements Serializable{
 		email = korisnik.getEmail();
 		password = korisnik.getPassword();
 		dozvoljen = korisnik.isDozvoljen();
+		slika = korisnik.getSlika();
 	}
 
 	public Integer getId() {
@@ -80,10 +82,18 @@ public class KorisnikDTO implements Serializable{
 		this.dozvoljen = dozvoljen;
 	}
 
+	public String getSlika() {
+		return slika;
+	}
+
+	public void setSlika(String slika) {
+		this.slika = slika;
+	}
+
 	@Override
 	public String toString() {
 		return "KorisnikDTO [id=" + id + ", ime=" + ime + ", prezime=" + prezime + ", username=" + username + ", email="
-				+ email + ", password=" + password + ", dozvoljen=" + dozvoljen + "]";
+				+ email + ", password=" + password + ", dozvoljen=" + dozvoljen + ", slika=" + slika + "]";
 	}
 	
 }

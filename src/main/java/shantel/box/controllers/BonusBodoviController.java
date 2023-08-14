@@ -150,7 +150,7 @@ public class BonusBodoviController {
 //			Korisnik sender = korisnikService.findKorisnikByUsername(username);
 			
 			String bonusType = "Poeni";
-			int bonusValue = 20;
+			int bonusValue = 30;
 			
 			bonusNagrada.setReceiver(receiver);
 			System.out.println(bonusNagrada);

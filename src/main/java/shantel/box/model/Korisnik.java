@@ -25,6 +25,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import shantel.box.dto.KorisnikDTO;
+
 @Entity
 @Table(name = "korisnik")
 public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>{
@@ -58,7 +60,7 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	@Column(name = "slika", unique = false, nullable = true)
 	private String slika;
 	
-	@OneToMany(mappedBy = "korisnik", cascade = CascadeType.ALL , fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "korisnik", cascade = CascadeType.ALL , fetch = FetchType.EAGER)
 	private Set<Bodovi> bodovi;
 	
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -105,6 +107,17 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 		this.dozvoljen = dozvoljen;
 		this.slika = slika;
 	}
+	
+	public Korisnik(KorisnikDTO korisnikDTO) {
+		this.id = korisnikDTO.getId();
+		this.ime = korisnikDTO.getIme();
+		this.prezime = korisnikDTO.getPrezime();
+		this.username = korisnikDTO.getUsername();
+		this.email = korisnikDTO.getEmail();
+		this.password = korisnikDTO.getPassword();
+		this.dozvoljen = korisnikDTO.isDozvoljen();
+        this.slika = korisnikDTO.getSlika();
+    }
 
 	public Integer getId() {
 		return id;

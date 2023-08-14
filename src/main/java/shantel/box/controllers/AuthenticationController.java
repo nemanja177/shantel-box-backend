@@ -1,7 +1,9 @@
 package shantel.box.controllers;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -17,6 +19,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,12 +35,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import shantel.box.dto.ApplicationStatusDTO;
 import shantel.box.exception.ResourceConflictException;
+import shantel.box.model.ApplicationStatus;
 import shantel.box.model.Korisnik;
 import shantel.box.model.UserRequest;
 import shantel.box.model.UserTokenState;
 import shantel.box.security.UserToken;
 import shantel.box.security.auth.JwtAuthenticationRequest;
+import shantel.box.services.ApplicationStatusService;
 import shantel.box.services.KorisnikService;
 import shantel.box.services.impl.KorisnikServiceImpl;
 
@@ -46,6 +53,9 @@ import shantel.box.services.impl.KorisnikServiceImpl;
 public class AuthenticationController {
 	
 	public static final String KORISNIK_KEY = "username";
+	
+	@Autowired
+	private ApplicationStatusService appStatusService;
 
 	@Autowired
 	private UserToken tokenUtils;
@@ -66,40 +76,54 @@ public class AuthenticationController {
 //	public void test2() {
 //		System.out.println("test2");
 //	}
+	
+	private ApplicationStatus getApplicationStatus() {
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = new Date();
+//		System.out.println("DANASNJI DATUM: " + date);
+		ApplicationStatus appStatus = appStatusService.checkIsAppUnlocked(date);
+		return appStatus;
+	}
+	
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping("/login")
-	public ResponseEntity<UserTokenState> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
+	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
 			HttpServletResponse response, HttpServletRequest request) {
-		System.out.println(passwordEndcoder.encode(authenticationRequest.getPassword()));
+//		System.out.println(passwordEndcoder.encode(authenticationRequest.getPassword()));
 //		HttpHeaders responseHeaders = new HttpHeaders();
 //		responseHeaders.set("Access-Control-Allow-Origin", "https://bigalslist.com");
 //		responseHeaders.set("Access-Control-Allow-Credentials", "true");
 		
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
+		System.out.println("Pokusaj logina na: " + authenticationRequest.getUsername());
+		ApplicationStatus appStatus = getApplicationStatus();
+//		System.out.println("MAINTENANCE CODE: " + appStatus);
+		if(appStatus == null || appStatus.getActive() == false || authenticationRequest.getUsername().equals("admin")) {
+			Authentication authentication = null;
+			try {
+				authentication = authenticationManager
+						.authenticate(new UsernamePasswordAuthenticationToken(authenticationRequest.getUsername(),
 						authenticationRequest.getPassword()));
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
-		Korisnik user = (Korisnik) authentication.getPrincipal();
-		if(user.isDozvoljen()) {
-			String jwt = tokenUtils.generateToken(user.getUsername(), user.getAuthoritiesAsString());
-			int expiresIn = tokenUtils.getExpiredIn();
+			} catch (BadCredentialsException e) {
+				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			}
+					
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			Korisnik user = (Korisnik) authentication.getPrincipal();
 			HttpSession session = request.getSession(true);
 			session.setAttribute(AuthenticationController.KORISNIK_KEY, user.getUsername());
-			System.out.println("SESSIJA LOGINA: " + session.getId());
-//			try {
-//				response.sendRedirect("/box/bodovi/mesecni");
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
+			String jwt = tokenUtils.generateToken(user.getUsername(), user.getAuthoritiesAsString());
+			int expiresIn = tokenUtils.getExpiredIn();
 			return new ResponseEntity<>(new UserTokenState(jwt, expiresIn), HttpStatus.OK);
-//			return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
-			
-		} else {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-//			throw new ResourceConflictException(user.getId(), "User blocked!");
-			
 		}
+			
+//			return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
+		else {
+			ApplicationStatusDTO appStatusDTO = new ApplicationStatusDTO(appStatus);
+			return new ResponseEntity<>(appStatusDTO, HttpStatus.LOCKED);
+		}
+//		} else 
+////			throw new ResourceConflictException(user.getId(), "User blocked!");
+//		} 
 	}
 	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping("/signup")

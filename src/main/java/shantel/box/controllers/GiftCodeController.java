@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import shantel.box.dto.KorisnikDTO;
 import shantel.box.dto.PoklonKodDTO;
 import shantel.box.model.Bodovi;
 import shantel.box.model.Korisnik;
@@ -76,17 +77,18 @@ public class GiftCodeController {
 		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
 			poklonKod.setIsValid(false);
 			poklonKodService.save(poklonKod);
-			System.out.println("INFO FIRST: " + poklonKod);
+//			System.out.println("INFO FIRST: " + poklonKod);
 		}
 		
 		if ( poklonKod == null || poklonKod.getIsValid() == false && poklonKod.getActivatedDate() == null) {
-			System.out.println("INFO SECOND: " + poklonKod);
-			if (!formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))){
+//			System.out.println("INFO SECOND: " + poklonKod);
+			if (poklonKod == null || !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))){
 				List<Korisnik> sviKorisnici = korisnikService.findAll(); 
-				System.out.println("INFO THIRD: " + poklonKod);
+//				System.out.println("INFO THIRD: " + poklonKod);
 				Random rand = new Random();
 				int randomUser = rand.nextInt(sviKorisnici.size());
 				Korisnik receiver = sviKorisnici.get(randomUser);
+//				System.out.println("INFO FORTH: " + receiver);
 				
 				List<String> codesList = readCode();
 				String code = generateCode(codesList);
@@ -95,10 +97,11 @@ public class GiftCodeController {
 				int randomPoints = rand2.nextInt(31) - 10;
 				
 				Date datumDobijanja = new Date();
-				
+//				Korisnik korisnik = new Korisnik(sender);
 				PoklonKod newPoklonKod = new PoklonKod(sender, receiver, code, randomPoints, datumDobijanja, true);
+				PoklonKodDTO poklonKodDTO = new PoklonKodDTO(newPoklonKod);
 				poklonKodService.save(newPoklonKod);
-				return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(newPoklonKod), HttpStatus.OK);
+				return new ResponseEntity<PoklonKodDTO>(poklonKodDTO, HttpStatus.OK);
 			} 
 		} 
 		return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(poklonKod), HttpStatus.OK);

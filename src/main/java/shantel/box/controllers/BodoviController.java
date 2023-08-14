@@ -457,7 +457,7 @@ public class BodoviController {
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
 		Collections.sort(sortedList);
 		for( Bodovi bod : sortedList ) {
-			if ( bod.getSpecijalnaNagrada() == null) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
+			if ( bod.getSpecijalnaNagrada() == null || bod.getSpecijalnaNagrada().equals("10 Evra")) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
 				poslednjiBod = bod;
 			}
 		}
@@ -468,7 +468,10 @@ public class BodoviController {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date datum = new Date();
 		boolean canOpen = false;
+		System.out.println("DANASNJI DATUM: " + datum);
+		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
 		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+			System.out.println("USAO U IF JER JE TRUE");
 			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
 			try {
 				if ( bonusNagrada.getReceiver() != null ) {
@@ -478,22 +481,32 @@ public class BodoviController {
 				}
 			} catch (Exception e) {
 				canOpen = true;
+				System.out.println("OVDEEEE");
 			}
 			
 		} else {
 			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
-				canOpen = true; //verovatno false ali videcemo
+				canOpen = false; //verovatno false ali videcemo
+				System.out.println("OVDEEE");
 			} else {
 				canOpen = false;
+				System.out.println("NEMERE");
 			}
 			try {
 				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
 					canOpen = true;
+					System.out.println("OVDEE");
+				} else {
+					canOpen = false;
+					System.out.println("OVDE");
 				}
 			} catch (Exception e) {
 				canOpen = false;
 			} 
 		}
+		
+		
+		System.out.println("FINAL: " + canOpen);
 		return canOpen;
 	}
 	
@@ -529,7 +542,7 @@ public class BodoviController {
 //		int brojBodova = rand.nextInt(300) - 100; // normal
 //		int brojBodova = rand.nextInt(100) + 100; // od 100 do 200
 		int brojBodova = rand.nextInt(200); // samo do 200, bez minusa
-		int specijalanBroj = rand.nextInt(800) + 1;
+		int specijalanBroj = rand.nextInt(700) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
@@ -541,18 +554,27 @@ public class BodoviController {
 		Date datum = new Date();
 		bod.setDatumDobijanja(datum);
 		
-		if (specijalanBroj == 500) {
-			int specBroj2 = rand.nextInt(2) + 1;
-			if ( specBroj2 == 1) {
-				bod.setBrojBodova(0);
-				bod.setSpecijalnaNagrada("Slobodan Dan");
-			} else if (specBroj2 == 2){
-				bod.setBrojBodova(0);
-				bod.setSpecijalnaNagrada("10 Evra");
-			}
+		
+		// ==== SAMO ZA JEDNU NAGRADU ==== 
+		if ( specijalanBroj == 500 ) {
+			bod.setBrojBodova(0);
+			bod.setSpecijalnaNagrada("10 Evra");
 		} else {
 			bod.setBrojBodova(brojBodova);
 		}
+		/// ===== ZA SLUCAJ DA IMA VISE SPECIJALNIH NAGRADA =====
+//		if (specijalanBroj == 500) {
+//			int specBroj2 = rand.nextInt(2) + 1;
+//			if ( specBroj2 == 1) {
+//				bod.setBrojBodova(0);
+//				bod.setSpecijalnaNagrada("Slobodan Dan");
+//			} else if (specBroj2 == 2){
+//				bod.setBrojBodova(0);
+//				bod.setSpecijalnaNagrada("10 Evra");
+//			}
+//		} else {
+//			bod.setBrojBodova(brojBodova);
+//		}
 		
 //		HttpSession session = request.getSession();
 //		System.out.println("SESIJA: " + session.getId());
