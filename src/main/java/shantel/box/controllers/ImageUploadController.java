@@ -20,11 +20,12 @@ import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/upload")
+@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class ImageUploadController {
 //    private static String imageDirectory = System.getProperty("user.dir") + "/images/";
 //    String imageDirectory = ImageUploadController.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 
-    @CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//    @CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
     @RequestMapping(value = "/image", produces = {MediaType.IMAGE_PNG_VALUE, "application/json"})
     public ResponseEntity<?> uploadImage(@RequestParam("imageFile") MultipartFile file) {
     	HttpHeaders responseHeaders = new HttpHeaders();

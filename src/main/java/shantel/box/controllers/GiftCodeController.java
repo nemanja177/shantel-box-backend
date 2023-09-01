@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ import shantel.box.services.PoklonKodService;
 
 @RestController
 @RequestMapping(value = "/giftCode")
+@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class GiftCodeController {
 
 	@Autowired
@@ -53,7 +55,7 @@ public class GiftCodeController {
 	private BodoviService bodoviService;
 	
 //	@SuppressWarnings("null")
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/getCode")
 	@JsonIgnore
 	public ResponseEntity<PoklonKodDTO> getKod(@AuthenticationPrincipal Korisnik sender, HttpSession session) {
@@ -174,7 +176,7 @@ public class GiftCodeController {
 		return false;
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/activateCode")
 	public ResponseEntity<?> validateKod(@AuthenticationPrincipal Korisnik receiver, @RequestBody String giftCode) {
 		try {	

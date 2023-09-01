@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
@@ -50,6 +51,7 @@ import shantel.box.services.impl.KorisnikServiceImpl;
 
 @RestController
 @RequestMapping(value = "/auth")
+@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class AuthenticationController {
 	
 	public static final String KORISNIK_KEY = "username";
@@ -85,18 +87,13 @@ public class AuthenticationController {
 		return appStatus;
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtAuthenticationRequest authenticationRequest,
 			HttpServletResponse response, HttpServletRequest request) {
-//		System.out.println(passwordEndcoder.encode(authenticationRequest.getPassword()));
-//		HttpHeaders responseHeaders = new HttpHeaders();
-//		responseHeaders.set("Access-Control-Allow-Origin", "https://bigalslist.com");
-//		responseHeaders.set("Access-Control-Allow-Credentials", "true");
 		
-		System.out.println("Pokusaj logina na: " + authenticationRequest.getUsername());
+		System.out.println("LOG: Pokusaj logina na: " + authenticationRequest.getUsername());
 		ApplicationStatus appStatus = getApplicationStatus();
-//		System.out.println("MAINTENANCE CODE: " + appStatus);
 		if(appStatus == null || appStatus.getActive() == false || authenticationRequest.getUsername().equals("admin")) {
 			Authentication authentication = null;
 			try {
@@ -113,6 +110,10 @@ public class AuthenticationController {
 			session.setAttribute(AuthenticationController.KORISNIK_KEY, user.getUsername());
 			String jwt = tokenUtils.generateToken(user.getUsername(), user.getAuthoritiesAsString());
 			int expiresIn = tokenUtils.getExpiredIn();
+//			List<String> roles = user.getAuthorities().stream()
+//					.map(item -> item.getAuthority())
+//					.collect(Collectors.toList());
+			System.out.println("AUTORITIEZ: " + user.getAuthoritiesAsString());
 			return new ResponseEntity<>(new UserTokenState(jwt, expiresIn), HttpStatus.OK);
 		}
 			
@@ -125,12 +126,9 @@ public class AuthenticationController {
 ////			throw new ResourceConflictException(user.getId(), "User blocked!");
 //		} 
 	}
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping("/signup")
 	public ResponseEntity<Korisnik> addUser(@RequestBody Korisnik korisnik, UriComponentsBuilder ucBuilder) {
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
-		responseHeaders.set("Access-Control-Allow-Credentials", "true");
 		Korisnik existUser = this.korisnikService.findKorisnikByUsername(korisnik.getUsername());
 		System.out.println(korisnik);
 		if (existUser != null) {
@@ -147,15 +145,12 @@ public class AuthenticationController {
 	
 	@GetMapping("/logout")
 	public ResponseEntity<Korisnik> logout(HttpSession session) {
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
-		responseHeaders.set("Access-Control-Allow-Credentials", "true");
 		session.invalidate();
 		System.out.println("===================== IZLOGOVAN =================");
-		return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/validate")
 	public ResponseEntity<Boolean> checkToken(HttpSession session) {
 //		HttpHeaders responseHeaders = new HttpHeaders();
@@ -171,7 +166,7 @@ public class AuthenticationController {
 			return new ResponseEntity<>(false, HttpStatus.OK);
 		}		
 	}
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/validate2")
 	public ResponseEntity<?> isTokenValid(@RequestParam String token, @AuthenticationPrincipal Korisnik korisnik) {
 		
@@ -185,7 +180,7 @@ public class AuthenticationController {
 		}
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/lock")
 	public ResponseEntity<Boolean> lockUsers(HttpSession session) {
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
@@ -200,7 +195,7 @@ public class AuthenticationController {
 		}
 		
 	}
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/unlock")
 	public ResponseEntity<Boolean> unlockUsers(HttpSession session) {
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
@@ -215,12 +210,6 @@ public class AuthenticationController {
 		}
 		
 	}
-	
-//	@GetMapping("/test")
-//	public void test() {
-//		System.out.println("test");	
-//	}
-//	
 	@GetMapping("/password")
 	public void getPassword(@RequestBody String password) {
 		System.out.println(password);

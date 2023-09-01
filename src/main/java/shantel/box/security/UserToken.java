@@ -39,7 +39,7 @@ public class UserToken {
 					.setSubject(username)
 					.setIssuedAt(new Date())
 					.setExpiration(generateExpirationDate())
-					.claim("roles", roles)
+					.claim("role", roles)
 					.signWith(SIGNATURE_ALGORITHM, SECRET).compact();
 		}
 

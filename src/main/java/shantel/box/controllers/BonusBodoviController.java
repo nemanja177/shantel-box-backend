@@ -33,6 +33,7 @@ import shantel.box.services.KorisnikService;
 
 @RestController
 @RequestMapping(value = "/bonusBodovi")
+@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class BonusBodoviController {
 
 	@Autowired
@@ -45,7 +46,7 @@ public class BonusBodoviController {
 	BodoviService bodoviService;
 	
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/randomUsers")
 	public ResponseEntity<List<Korisnik>> getRandomUsers(HttpSession session) {
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -101,13 +102,11 @@ public class BonusBodoviController {
 		// TODO
 		// AKO ima vec generisanih korisnika, onda vratiti to. Ukoliko nema generisati nove -- uradjeno?proveriti
 		// Staviti da nije moguce samog sebe dobiti kao opciju -- uradjeno ?proveriti
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		return new ResponseEntity<List<Korisnik>>(randomKorisnici, HttpStatus.OK);
 		
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/hasSendGift")
 	public ResponseEntity<Boolean> hasSendGift(HttpSession session) {
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -128,7 +127,7 @@ public class BonusBodoviController {
 //		return korisnik;
 //	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/chosen")
 	public ResponseEntity<Boolean> chooseUser(@RequestParam("id") int id, HttpSession session) {	
 		Korisnik receiver = korisnikService.findKorisnikById(id);
@@ -150,7 +149,7 @@ public class BonusBodoviController {
 //			Korisnik sender = korisnikService.findKorisnikByUsername(username);
 			
 			String bonusType = "Poeni";
-			int bonusValue = 30;
+			int bonusValue = 20;
 			
 			bonusNagrada.setReceiver(receiver);
 			System.out.println(bonusNagrada);
@@ -172,7 +171,7 @@ public class BonusBodoviController {
 	}
 
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allDailyBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllDailyBonus() {
 		
@@ -250,7 +249,7 @@ public class BonusBodoviController {
 //		return new ResponseEntity<List<BonusNagrade>>(returnList, HttpStatus.OK);
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allYesterdayBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllYesterdayBonuses() {
 
@@ -274,7 +273,7 @@ public class BonusBodoviController {
 	}
 	
 	@SuppressWarnings("deprecation")
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allMontlyBonuses")
 	public ResponseEntity<List<Korisnik>> getAllBonus() {
 		List<Korisnik> korisnici = new ArrayList<>();
@@ -306,7 +305,7 @@ public class BonusBodoviController {
 		return new ResponseEntity<>(korisnici,HttpStatus.OK);
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/dailyRecentBonus")
 	public ResponseEntity<List<BonusNagradeDTO>> bonusi() {
 		Date date = new Date();

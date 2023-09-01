@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ import shantel.box.services.KorisnikService;
 
 @RestController
 @RequestMapping(value = "/bodovi")
+@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class BodoviController {
 	
 	@Autowired
@@ -72,9 +74,9 @@ public class BodoviController {
 			Collections.reverse(korisnici);
 		}
 		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
-		return new ResponseEntity<>(korisnici,responseHeaders,HttpStatus.OK);
+//		HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+		return new ResponseEntity<>(korisnici,HttpStatus.OK);
 	}
 	
 	@GetMapping(value = "/nedeljni")
@@ -138,10 +140,10 @@ public class BodoviController {
 //		    System.out.println("Current week of month is : " +
 //		                now.get(Calendar.WEEK_OF_YEAR));
 //			return Response.status(201).entity(korisnici).header(null, korisnici)
-			HttpHeaders responseHeaders = new HttpHeaders();
-			responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//			HttpHeaders responseHeaders = new HttpHeaders();
+//			responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 			
-		    return new ResponseEntity<>(korisnici,responseHeaders, HttpStatus.OK);
+		    return new ResponseEntity<>(korisnici, HttpStatus.OK);
 		
         }
 	
@@ -191,10 +193,10 @@ public class BodoviController {
 //			}
 //		}
 		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//		HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		
-		return new ResponseEntity<>(korisnici, responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(korisnici, HttpStatus.OK);
 		
 	}
 	
@@ -221,10 +223,10 @@ public class BodoviController {
 			Collections.sort(korisnici);
 			Collections.reverse(korisnici);
 		}
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//		HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		
-		return new ResponseEntity<>(korisnici,responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(korisnici, HttpStatus.OK);
 	}
 	
 	@GetMapping(value = "/lastOpen")
@@ -269,11 +271,11 @@ public class BodoviController {
 //			korisnik.setBodovi(trenutniBod);
 //			korisnici.add(korisnik);
 		}
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//		HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		
 		
-		return new ResponseEntity<>(sredjeniBodovi,responseHeaders, HttpStatus.OK);
+		return new ResponseEntity<>(sredjeniBodovi, HttpStatus.OK);
 		
 //		
 //		for ( Korisnik korisnik : sviKorisnici) {
@@ -350,13 +352,11 @@ public class BodoviController {
 		
 //		System.out.println("KORISNICI POSLATI ZA DNEVNE BODOVE " + korisnici);
 		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
-		return new ResponseEntity<>(korisnici,responseHeaders,HttpStatus.OK);
+		return new ResponseEntity<>(korisnici,HttpStatus.OK);
 		
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+	
 	@GetMapping(value = "/check")
 	public ResponseEntity<Boolean> canOpen(HttpSession session) {
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -468,10 +468,10 @@ public class BodoviController {
 		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		Date datum = new Date();
 		boolean canOpen = false;
-		System.out.println("DANASNJI DATUM: " + datum);
-		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
+//		System.out.println("DANASNJI DATUM: " + datum);
+//		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
 		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
-			System.out.println("USAO U IF JER JE TRUE");
+//			System.out.println("USAO U IF JER JE TRUE");
 			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
 			try {
 				if ( bonusNagrada.getReceiver() != null ) {
@@ -481,24 +481,24 @@ public class BodoviController {
 				}
 			} catch (Exception e) {
 				canOpen = true;
-				System.out.println("OVDEEEE");
+//				System.out.println("OVDEEEE");
 			}
 			
 		} else {
 			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
 				canOpen = false; //verovatno false ali videcemo
-				System.out.println("OVDEEE");
+//				System.out.println("OVDEEE");
 			} else {
 				canOpen = false;
-				System.out.println("NEMERE");
+//				System.out.println("NEMERE");
 			}
 			try {
 				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
 					canOpen = true;
-					System.out.println("OVDEE");
+//					System.out.println("OVDEE");
 				} else {
 					canOpen = false;
-					System.out.println("OVDE");
+//					System.out.println("OVDE");
 				}
 			} catch (Exception e) {
 				canOpen = false;
@@ -506,12 +506,13 @@ public class BodoviController {
 		}
 		
 		
-		System.out.println("FINAL: " + canOpen);
+//		System.out.println("FINAL: " + canOpen);
 		return canOpen;
 	}
 	
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping( value = "/userswhodidntnopen")
+//	@PreAuthorize("hasRole('AUTHORITY_ADMIN')")
 	public ResponseEntity<List<Korisnik>> getUsersWhoDidntOpen(HttpSession session) {
 		
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
@@ -532,16 +533,16 @@ public class BodoviController {
 		
 		return new ResponseEntity<List<Korisnik>>(didntOpen, HttpStatus.OK);
 	}
-	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
+//	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping
 	public ResponseEntity<Bodovi> setBodovi(HttpSession session) {
 		
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
 
-//		int brojBodova = rand.nextInt(300) - 100; // normal
+		int brojBodova = rand.nextInt(300) - 100; // normal
 //		int brojBodova = rand.nextInt(100) + 100; // od 100 do 200
-		int brojBodova = rand.nextInt(200); // samo do 200, bez minusa
+//		int brojBodova = rand.nextInt(200); // samo do 200, bez minusa
 		int specijalanBroj = rand.nextInt(700) + 1;
 		
 		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
@@ -588,14 +589,14 @@ public class BodoviController {
 		bod.setKorisnik(korisnik);
 		
 		String bonusType = "Poeni";
-		int bonusValue = 30;
+		int bonusValue = 20;
 		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, datum);
 		bodoviService.save(bod);
 //		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);
 		bonusNagradeService.save(bonusNagrada);
 		
-		HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//		HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
 		return new ResponseEntity<>(bod, HttpStatus.OK);
 	}
 		
