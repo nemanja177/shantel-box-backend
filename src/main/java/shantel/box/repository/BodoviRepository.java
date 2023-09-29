@@ -26,7 +26,10 @@ public interface BodoviRepository  extends JpaRepository<Bodovi, Integer>{
 	
 	List<Bodovi> findBodoviByDatumDobijanja(Date date);
 	
-	List<Bodovi> findBySpecijalnaNagradaIsNullOrSpecijalnaNagradaNot(String nagrada);
+	@Query(value = "SELECT * from bodovi WHERE specijalna_nagrada is null OR specijalna_nagrada = ?1 ORDER BY bod_id DESC LIMIT 5", nativeQuery = true)
+	List<Bodovi> findLastBodovi(String nagrada);
+	
+	//	List<Bodovi> findBySpecijalnaNagradaIsNullOrSpecijalnaNagradaNot(String nagrada); staro radi
 	
 	List<Bodovi> findBySpecijalnaNagradaIsNull();
 	

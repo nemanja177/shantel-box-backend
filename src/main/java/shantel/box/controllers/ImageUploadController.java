@@ -28,9 +28,9 @@ public class ImageUploadController {
 //    @CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
     @RequestMapping(value = "/image", produces = {MediaType.IMAGE_PNG_VALUE, "application/json"})
     public ResponseEntity<?> uploadImage(@RequestParam("imageFile") MultipartFile file) {
-    	HttpHeaders responseHeaders = new HttpHeaders();
-		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
-		responseHeaders.set("Access-Control-Allow-Credentials", "true");
+//    	HttpHeaders responseHeaders = new HttpHeaders();
+//		responseHeaders.set("Access-Control-Allow-Origin", "https://kutija.net");
+//		responseHeaders.set("Access-Control-Allow-Credentials", "true");
 		File directory = new File("/var/www/vhosts/kutija.net/httpdocs/images");
 //        if (!directory.exists()) {
 //            directory.mkdir();

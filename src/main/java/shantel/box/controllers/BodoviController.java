@@ -244,12 +244,13 @@ public class BodoviController {
 //		Date date = new Date();
 //		System.out.println("===========BODOVI===========");
 		
-		List<Bodovi> betterListBodovi = bodoviService.findWithoutSpecificSpecijalnaNagrada("Poeni"); // izmena
+//		List<Bodovi> betterListBodovi = bodoviService.findWithoutSpecificSpecijalnaNagrada("Poeni"); // izmena
 //		List<Bodovi> betterListBodovi = bodoviService.findBySpecijalnaNagradaIsNull();
-		System.out.println(betterListBodovi.size());
-		Collections.sort(betterListBodovi);
-		Collections.reverse(betterListBodovi);
-		List<Bodovi> subListBodovi = betterListBodovi.subList(0, 5);
+		List<Bodovi> betterListBodovi = bodoviService.getLastBodovi("10 Evra");
+//		System.out.println(betterListBodovi.size());
+//		Collections.sort(betterListBodovi);
+//		Collections.reverse(betterListBodovi);
+//		List<Bodovi> subListBodovi = betterListBodovi.subList(0, 5);
 //		for ( Bodovi bod : betterListBodovi ) {
 //			System.out.println("-------------------LISTA BODOVA-------------------");
 //			System.out.println(bod);
@@ -257,7 +258,7 @@ public class BodoviController {
 //		List<Bodovi> subListSredjeniBodovi = new ArrayList<>();
 		List<PoslednjiBodovi> sredjeniBodovi = new ArrayList<>();
 //		List<Bodovi> sredjeniBodovi = new ArrayList<Bodovi>();
-		for ( Bodovi bod: subListBodovi) {
+		for ( Bodovi bod: betterListBodovi) {
 //			System.out.println("------------BOD-----------");
 //			System.out.println("BOD: " + bod);
 			Korisnik korisnik = korisnikService.findKorisnikById(bod.getKorisnik().getId());
@@ -386,11 +387,11 @@ public class BodoviController {
 		
 //		System.out.println("KORISNIK: " + formatter.format(poslednjiBod.getDatumDobijanja()));
 //		System.out.println("DATUM: " + formatter.format(datum));
-		poslednjiBod = getLastBod(korisnik);
+		poslednjiBod = bodoviService.getLastBod(korisnik);
 		if ( poslednjiBod == null) {
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		}
-		canOpen = checker(korisnik, poslednjiBod);
+		canOpen = bodoviService.checker(korisnik, poslednjiBod);
 		/* PREBACENO U ZASEBNU FUNKCIJU 
 		 * /- public boolean checker -/
 		 * 
@@ -451,81 +452,26 @@ public class BodoviController {
 		return new ResponseEntity<>(canOpen, HttpStatus.OK);
 	}
 	
-	public Bodovi getLastBod(Korisnik korisnik) {
-		Bodovi poslednjiBod = null;
-		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
-		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
-		Collections.sort(sortedList);
-		for( Bodovi bod : sortedList ) {
-			if ( bod.getSpecijalnaNagrada() == null || bod.getSpecijalnaNagrada().equals("10 Evra")) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
-				poslednjiBod = bod;
-			}
-		}
-		return poslednjiBod;
-	}
-	 
-	public boolean checker(Korisnik korisnik, Bodovi poslednjiBod) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date datum = new Date();
-		boolean canOpen = false;
-//		System.out.println("DANASNJI DATUM: " + datum);
-//		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
-		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
-//			System.out.println("USAO U IF JER JE TRUE");
-			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
-			try {
-				if ( bonusNagrada.getReceiver() != null ) {
-					canOpen = true;
-				} else {
-					canOpen = false;
-				}
-			} catch (Exception e) {
-				canOpen = true;
-//				System.out.println("OVDEEEE");
-			}
-			
-		} else {
-			if ( poslednjiBod.getSpecijalnaNagrada() == null ) {
-				canOpen = false; //verovatno false ali videcemo
-//				System.out.println("OVDEEE");
-			} else {
-				canOpen = false;
-//				System.out.println("NEMERE");
-			}
-			try {
-				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
-					canOpen = true;
-//					System.out.println("OVDEE");
-				} else {
-					canOpen = false;
-//					System.out.println("OVDE");
-				}
-			} catch (Exception e) {
-				canOpen = false;
-			} 
-		}
-		
-		
-//		System.out.println("FINAL: " + canOpen);
-		return canOpen;
-	}
+	
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping( value = "/userswhodidntnopen")
 //	@PreAuthorize("hasRole('AUTHORITY_ADMIN')")
 	public ResponseEntity<List<Korisnik>> getUsersWhoDidntOpen(HttpSession session) {
 		
-		List<Korisnik> sviKorisnici = korisnikService.findAll();
-		List<Korisnik> didntOpen = new ArrayList<>();
+//		List<Korisnik> sviKorisnici = korisnikService.findAll();
+//		List<Korisnik> didntOpen = new ArrayList<>();
+//		
+//		for(Korisnik korisnik: sviKorisnici) {
+//			Bodovi poslednjiBod = getLastBod(korisnik);
+//			if ( poslednjiBod == null) {
+//				didntOpen.add(korisnik);
+//			} else if ( checker(korisnik, poslednjiBod)){	
+//				didntOpen.add(korisnik);
+//			}
+//		}
+		List<Korisnik> didntOpen = bodoviService.unoppenedBoxUsers();
 		
-		for(Korisnik korisnik: sviKorisnici) {
-			Bodovi poslednjiBod = getLastBod(korisnik);
-			if ( poslednjiBod == null) {
-				didntOpen.add(korisnik);
-			} else if ( checker(korisnik, poslednjiBod)){	
-				didntOpen.add(korisnik);
-			}
-		}
 		
 //		for ( Korisnik korisnik: didntOpen) {
 //			System.out.println("PICKE KOJE NISU OTVORILE KUTIJU: " + korisnik);

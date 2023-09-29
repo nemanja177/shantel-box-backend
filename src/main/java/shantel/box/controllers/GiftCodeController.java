@@ -44,6 +44,8 @@ import shantel.box.services.PoklonKodService;
 @RequestMapping(value = "/giftCode")
 @CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class GiftCodeController {
+	
+	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	@Autowired
 	private PoklonKodService poklonKodService;
@@ -71,21 +73,32 @@ public class GiftCodeController {
 //		else {
 //			poklonKod = poklonKodovi.get(poklonKodovi.size());
 //		}
-		System.out.println("POKLON KOD ======> " + poklonKod);
+//		System.out.println("POKLON KOD ======> " + poklonKod);
 		// stavlja da poklon kod nije validan ukoliko je trenutan datum drugaciji do datuma generisanja
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date date = new Date();
+
+	
 		
-		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
-			poklonKod.setIsValid(false);
-			poklonKodService.save(poklonKod);
+//		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
+//			poklonKod.setIsValid(false);
+//			poklonKodService.save(poklonKod);
 //			System.out.println("INFO FIRST: " + poklonKod);
-		}
+//		}
 		
-		if ( poklonKod == null || poklonKod.getIsValid() == false && poklonKod.getActivatedDate() == null) {
+		poklonKod = checkCode(poklonKod);
+		
+		if ( poklonKod == null || poklonKod.getIsValid() == false) {
+			Date date = new Date();
 //			System.out.println("INFO SECOND: " + poklonKod);
 			if (poklonKod == null || !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))){
 				List<Korisnik> sviKorisnici = korisnikService.findAll(); 
+				
+				// for excluding debug user //
+				Korisnik djura = korisnikService.findKorisnikByUsername("djura");
+				sviKorisnici.remove(djura);
+				// ---------------------------
+//				System.out.println("SENDER: " + sender);
+				
+				sviKorisnici.remove(sender);
 //				System.out.println("INFO THIRD: " + poklonKod);
 				Random rand = new Random();
 				int randomUser = rand.nextInt(sviKorisnici.size());
@@ -96,7 +109,7 @@ public class GiftCodeController {
 				String code = generateCode(codesList);
 				
 				Random rand2 = new Random();
-				int randomPoints = rand2.nextInt(31) - 10;
+				int randomPoints = rand2.nextInt(41) - 10;
 				
 				Date datumDobijanja = new Date();
 //				Korisnik korisnik = new Korisnik(sender);
@@ -109,6 +122,17 @@ public class GiftCodeController {
 		return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(poklonKod), HttpStatus.OK);
 	}
 	
+	
+	public PoklonKod checkCode(PoklonKod poklonKod) {
+		Date date = new Date();
+		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
+			poklonKod.setIsValid(false);
+			poklonKodService.save(poklonKod);
+			System.out.println("NIJE VALIDAN: " + poklonKod);
+		}
+		
+		return poklonKod;
+	}
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 //	@GetMapping(value = "/testwrite")
@@ -183,6 +207,7 @@ public class GiftCodeController {
 			JSONObject jsonstring = new JSONObject(giftCode);
 			String code = (String) jsonstring.get("giftcode"); // wtf
 			PoklonKod poklonKod = poklonKodService.findKodByCode(code);
+			poklonKod = checkCode(poklonKod);
 			System.out.println(receiver + " ==== " + jsonstring.get("giftcode") );  /// stavi da istenke ukoliko je trenutan datum veci od dana kad je kod generisan + 1 dan -- stavljeno
 			if (poklonKod.getIsValid()) {
 				if (poklonKod.getReceiver().getUsername().equals(receiver.getUsername())) {
@@ -194,15 +219,19 @@ public class GiftCodeController {
 					poklonKodService.save(poklonKod);
 					bodoviService.save(poklonBod);
 					bodoviService.save(bodZaPosiljaoca);
-					return new ResponseEntity<>(true, HttpStatus.OK);
+					System.out.println("USPESNO SVE PREDJENO I DODATI BODOVI");
+					return new ResponseEntity<>(poklonKod, HttpStatus.OK);
 				} else {
-					return new ResponseEntity<>(false, HttpStatus.FORBIDDEN);
+					System.out.println("DRUGI IF NIJE PROSAO");
+					return new ResponseEntity<>(false, HttpStatus.OK);
 				}
 			} else {
-				return new ResponseEntity<>(false, HttpStatus.FORBIDDEN);
+				System.out.println("PRVI IF NIJE PROSAO");
+				return new ResponseEntity<>(false, HttpStatus.OK);
 			}
 		} catch (Exception e) {
-			return new ResponseEntity<>(false, HttpStatus.NOT_FOUND);
+			System.out.println("CATCH");
+			return new ResponseEntity<>(false, HttpStatus.OK);
 		}
 	}
 }
