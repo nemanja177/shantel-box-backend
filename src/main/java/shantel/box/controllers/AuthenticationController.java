@@ -103,7 +103,6 @@ public class AuthenticationController {
 			} catch (BadCredentialsException e) {
 				return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 			}
-					
 			SecurityContextHolder.getContext().setAuthentication(authentication);
 			Korisnik user = (Korisnik) authentication.getPrincipal();
 			HttpSession session = request.getSession(true);
@@ -159,7 +158,6 @@ public class AuthenticationController {
 			String username = (String) session.getAttribute(KORISNIK_KEY);
 			Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
 			korisnik.getBodovi();
-			System.out.println("KORISNIK: " + korisnik);
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		} catch (NullPointerException e) {
 			System.out.println("KORISNIK NIJE VALIDAN");
@@ -170,10 +168,11 @@ public class AuthenticationController {
 	@PostMapping(value = "/validate2")
 	public ResponseEntity<?> isTokenValid(@RequestParam String token, @AuthenticationPrincipal Korisnik korisnik) {
 		
-		System.out.println("LOGIN TOKEN: " + token);
-		System.out.println("KORISNIK IZ TOKENA: " + korisnik.getUsername());
+//		System.out.println("LOGIN TOKEN: " + token);
+//		System.out.println("KORISNIK IZ TOKENA: " + korisnik.getUsername());
 		try {
 			boolean isValid = tokenUtils.validateToken(token, korisnik);
+			System.out.println("VALIDAN? = " + isValid);
 			return ResponseEntity.ok(isValid);
 		} catch (ExpiredJwtException e) {
 			return ResponseEntity.ok(false);

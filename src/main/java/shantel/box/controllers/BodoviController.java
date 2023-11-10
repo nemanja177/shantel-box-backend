@@ -2,6 +2,10 @@ package shantel.box.controllers;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -19,6 +23,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,19 +58,30 @@ public class BodoviController {
 	@GetMapping(value = "/jucerasnji")
 	public ResponseEntity<List<Korisnik>> getJucerasnjiBodovi(HttpSession session) {
 		
+		
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+        LocalDate currentDate = currentDateTime.toLocalDate();
+        
+        LocalDate yesterday = currentDate.minusDays(1);
+		
+//		SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+		
 		List<Korisnik> korisnici = new ArrayList<>();
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
 		
-		Calendar now = Calendar.getInstance();
-		int brojDana = now.get(Calendar.DAY_OF_YEAR);
-		
+//		Calendar now = Calendar.getInstance();
+//		int brojDana = now.get(Calendar.DAY_OF_YEAR);
+//		int godina = now.get(Calendar.YEAR);
 		
 		for ( Korisnik korisnik : sviKorisnici) {
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> jucerasnjiBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
-				now.setTime(bod.getDatumDobijanja());
-				if ( now.get(Calendar.DAY_OF_YEAR) == (brojDana - 1)) {
+//				String yearString = yearFormat.format(bod.getDatumDobijanja());
+//				LocalDate savedObjectLocalDate = bod.getDatumDobijanja().toLocalDate();
+//				now.setTime(bod.getDatumDobijanja());
+				if ( yesterday.getDayOfYear() == bod.getDatumDobijanja().getDayOfYear() && yesterday.getYear() == bod.getDatumDobijanja().getYear()) {
 					jucerasnjiBodovi.add(bod);
 				} 
 			}
@@ -117,7 +134,7 @@ public class BodoviController {
 				Set<Bodovi> bodovi = korisnik.getBodovi();
 			    Set<Bodovi> nedeljniBodovi = new HashSet<>();
 				for ( Bodovi bod: bodovi ) {
-					now.setTime(bod.getDatumDobijanja());
+//					now.setTime(bod.getDatumDobijanja());
 					if (now.get(Calendar.WEEK_OF_YEAR) == brojNedelje) {
 //						System.out.println("LAVOR " + bod);
 						nedeljniBodovi.add(bod);
@@ -147,6 +164,7 @@ public class BodoviController {
 		
         }
 	
+	@SuppressWarnings("deprecation")
 	@GetMapping(value = "/mesecni")
 	public ResponseEntity<List<Korisnik>> getMesecniBodovi(HttpSession session) {
 //		System.out.println("POZVANNN");
@@ -154,7 +172,13 @@ public class BodoviController {
 //		session.setAttribute(KORISNIK_KEY, "admin");
 //		System.out.println((String) session.getAttribute(KORISNIK_KEY));
 //		System.out.println("SESIJA: " + session.getId());
-		List<Bodovi> sviBodovi = bodoviService.findAll();
+//		List<Bodovi> sviBodovi = bodoviService.findAll();
+		
+//		SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+        
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+        LocalDate currentDate = currentDateTime.toLocalDate();
 		
 		
 		List<Korisnik> korisnici = new ArrayList<>();
@@ -166,15 +190,19 @@ public class BodoviController {
 //			System.out.println(korisnik);
 //		}
 
-		Calendar now = Calendar.getInstance();
-		int month = now.get(Calendar.MONTH);
+//		Calendar now = Calendar.getInstance();
+//		int month = now.get(Calendar.MONTH);
+//		int year = now.get(Calendar.YEAR);	
+		
 		for ( Korisnik korisnik : sviKorisnici) {
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> mesecniBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
 //				System.out.println("SVI BODOVI KORISNIKA " + bod);
-				if ((bod.getDatumDobijanja().getMonth()) == month) {
-//					System.out.println("LAVOR " + bod);
+//				String yearString = yearFormat.format(bod.getDatumDobijanja());
+//				LocalDate savedObjectLocalDate = bod.getDatumDobijanja().toLocalDate();
+				if ( currentDate.getMonth() == bod.getDatumDobijanja().getMonth() && currentDate.getYear() == bod.getDatumDobijanja().getYear() ) {
+//					System.out.println("LAVOR " + bod.getDatumDobijanja().getYear());
 					mesecniBodovi.add(bod);
 					
 				}
@@ -200,21 +228,34 @@ public class BodoviController {
 		
 	}
 	
+	@SuppressWarnings("deprecation")
 	@GetMapping(value = "/prosliMesec")
 	public ResponseEntity<List<Korisnik>> getProsliMesec(HttpSession session) {
 		
+		LocalDateTime currentDateTime = LocalDateTime.now();
+
+        LocalDate currentDate = currentDateTime.toLocalDate();
+		
+//		SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+		
 		List<Korisnik> korisnici = new ArrayList<>();
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
-		Calendar now = Calendar.getInstance();
-		int month = now.get(Calendar.MONTH);
-		if ( month == 0 ) {
-			month = 12;
-		}
+		
+		LocalDate oneMonthBeforeCurrentMonth = currentDate.minusMonths(1);
+		
+//		Calendar now = Calendar.getInstance();
+//		int month = now.get(Calendar.MONTH);
+//		int year = now.get(Calendar.YEAR);
+//		if ( month == 0 ) {
+//			month = 12;
+//		}
+		
 		for ( Korisnik korisnik : sviKorisnici) {
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> mesecniBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
-				if ((bod.getDatumDobijanja().getMonth()) == (month - 1)) {
+//				String yearString = yearFormat.format(bod.getDatumDobijanja());
+				if ( oneMonthBeforeCurrentMonth.getMonth() == bod.getDatumDobijanja().getMonth() && oneMonthBeforeCurrentMonth.getYear() == bod.getDatumDobijanja().getYear()  ) {
 					mesecniBodovi.add(bod);
 				}
 			}
@@ -300,14 +341,14 @@ public class BodoviController {
 //		session.setAttribute(KORISNIK_KEY, "admin");
 //		System.out.println((String) session.getAttribute(KORISNIK_KEY));
 //		System.out.println("SESIJA: " + session.getId());
-		List<Bodovi> sviBodovi = bodoviService.findAll();
+//		List<Bodovi> sviBodovi = bodoviService.findAll();
 	
 		List<Korisnik> korisnici = new ArrayList<>();
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
 		
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		
-		Calendar now = Calendar.getInstance();
+//		Calendar now = Calendar.getInstance();
 		
 		
 		Date date = new Date();
@@ -323,7 +364,9 @@ public class BodoviController {
 //
 //		}
 		
+		LocalDateTime currentDateTime = LocalDateTime.now();
 
+        LocalDate currentDate = currentDateTime.toLocalDate();
 		
 		for ( Korisnik korisnik : sviKorisnici) {
 //			System.out.println(korisnik.getBodovi());
@@ -332,7 +375,8 @@ public class BodoviController {
 			for ( Bodovi bod: bodovi ) {
 //				System.out.println("SIZE: " + korisnik.getBodovi());
 //				System.out.println("bod" + bod);
-				if ( formatter.format(date).equals(formatter.format(bod.getDatumDobijanja()))) {
+				int comparisonResult = currentDate.compareTo(bod.getDatumDobijanja().toLocalDate());
+				if ( comparisonResult == 0 ) {
 					dnevniBodovi.add(bod);
 				} 
 //					else {
@@ -359,12 +403,14 @@ public class BodoviController {
 	
 	
 	@GetMapping(value = "/check")
-	public ResponseEntity<Boolean> canOpen(HttpSession session) {
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
-		
-		
+	public ResponseEntity<Boolean> canOpen(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+	    // Access user information
+	    String username = userDetails.getUsername();
+	    System.out.println("USERNAME:" + username);
+//		
 		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
-		System.out.println("KORISNIK: " + korisnik.getUsername());
+//		System.out.println("KORISNIK: " + korisnik);
 //		System.out.println("SESIJA PROVERE: " + session.getId());
 		Bodovi poslednjiBod = null;
 		boolean canOpen = false;
@@ -387,7 +433,9 @@ public class BodoviController {
 		
 //		System.out.println("KORISNIK: " + formatter.format(poslednjiBod.getDatumDobijanja()));
 //		System.out.println("DATUM: " + formatter.format(datum));
-		poslednjiBod = bodoviService.getLastBod(korisnik);
+//		System.out.println("KORISNIK" + korisnik);
+		poslednjiBod = getLastBod(korisnik);
+//		poslednjiBod = bodoviService.getLastBod(korisnik);
 		if ( poslednjiBod == null) {
 			return new ResponseEntity<>(true, HttpStatus.OK);
 		}
@@ -452,6 +500,22 @@ public class BodoviController {
 		return new ResponseEntity<>(canOpen, HttpStatus.OK);
 	}
 	
+	public Bodovi getLastBod(Korisnik korisnik) {
+		Bodovi poslednjiBod = null;
+		System.out.println("KORISNIK MRTVI: " + korisnik);
+		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
+		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
+//		Collections.sort(sortedList);
+		Collections.sort(sortedList, Collections.reverseOrder());
+		for( Bodovi bod : sortedList ) {
+			if ( bod.getSpecijalnaNagrada() == null || bod.getSpecijalnaNagrada().equals("10 Evra")) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
+				poslednjiBod = bod;
+				break;
+			}
+		}
+		return poslednjiBod;
+	}
+	
 	
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
@@ -481,25 +545,36 @@ public class BodoviController {
 	}
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping
-	public ResponseEntity<Bodovi> setBodovi(HttpSession session) {
+	public ResponseEntity<Bodovi> setBodovi(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
 		
 		Bodovi bod = new Bodovi();
 		Random rand = new Random();
+		
+		String username = userDetails.getUsername();
+//		System.out.println("USERNAME:" + username);
+//			
+		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
 
 		int brojBodova = rand.nextInt(300) - 100; // normal
 //		int brojBodova = rand.nextInt(100) + 100; // od 100 do 200
 //		int brojBodova = rand.nextInt(200); // samo do 200, bez minusa
 		int specijalanBroj = rand.nextInt(700) + 1;
 		
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
-		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+//		Korisnik korisnik = korisnikService.findKorisnikByUsername(username);
 		
 //		if ( korisnik.getUsername().equals("")) {
 //			specijalanBroj = 500;
 //		}
 		
-		Date datum = new Date();
-		bod.setDatumDobijanja(datum);
+//		LocalDateTime currentDateTime = LocalDateTime.now();
+		
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+//        LocalDate todaysDate = now.toLocalDate();
+		
+		bod.setDatumDobijanja(now);
 		
 		
 		// ==== SAMO ZA JEDNU NAGRADU ==== 
@@ -536,7 +611,7 @@ public class BodoviController {
 		
 		String bonusType = "Poeni";
 		int bonusValue = 20;
-		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, datum);
+		BonusNagrade bonusNagrada = new BonusNagrade(korisnik, bonusType, bonusValue, now);
 		bodoviService.save(bod);
 //		System.out.println("BONUS NAGRADA GENERACIJA: " + bonusNagrada);
 		bonusNagradeService.save(bonusNagrada);

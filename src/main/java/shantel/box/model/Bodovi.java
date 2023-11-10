@@ -1,8 +1,10 @@
 package shantel.box.model;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,7 +33,7 @@ public class Bodovi implements Comparable<Bodovi>{
 	private int brojBodova;
 	
 	@Column(name = "datumDobijanja", unique = false, nullable = false)
-	private Date datumDobijanja;
+	private ZonedDateTime datumDobijanja;
 	
 	@Column(name = "specijalnaNagrada", unique = false, nullable = true)
 	private String specijalnaNagrada;
@@ -45,7 +47,7 @@ public class Bodovi implements Comparable<Bodovi>{
 		super();
 	}
 
-	public Bodovi(Integer id, int brojBodova, Date datumDobijanja, Korisnik korisnik) {
+	public Bodovi(Integer id, int brojBodova, ZonedDateTime datumDobijanja, Korisnik korisnik) {
 		super();
 		this.id = id;
 		this.brojBodova = brojBodova;
@@ -53,7 +55,7 @@ public class Bodovi implements Comparable<Bodovi>{
 		this.korisnik = korisnik;
 	}
 
-	public Bodovi(int brojBodova, Date datumDobijanja, String specijalnaNagrada, Korisnik korisnik) {
+	public Bodovi(int brojBodova, ZonedDateTime datumDobijanja, String specijalnaNagrada, Korisnik korisnik) {
 		super();
 		this.brojBodova = brojBodova;
 		this.datumDobijanja = datumDobijanja;
@@ -61,14 +63,14 @@ public class Bodovi implements Comparable<Bodovi>{
 		this.korisnik = korisnik;
 	}
 
-	public Bodovi(Integer id, int brojBodova, Date datumDobijanja) {
+	public Bodovi(Integer id, int brojBodova, ZonedDateTime datumDobijanja) {
 		super();
 		this.id = id;
 		this.brojBodova = brojBodova;
 		this.datumDobijanja = datumDobijanja;
 	}
 	
-	public Bodovi(int brojBodova, Date datumDobijanja) {
+	public Bodovi(int brojBodova, ZonedDateTime datumDobijanja) {
 		super();
 		this.brojBodova = brojBodova;
 		this.datumDobijanja = datumDobijanja;
@@ -98,11 +100,11 @@ public class Bodovi implements Comparable<Bodovi>{
 		this.brojBodova = brojBodova;
 	}
 
-	public Date getDatumDobijanja() {
+	public ZonedDateTime getDatumDobijanja() {
 		return datumDobijanja;
 	}
 
-	public void setDatumDobijanja(Date datumDobijanja) {
+	public void setDatumDobijanja(ZonedDateTime datumDobijanja) {
 		this.datumDobijanja = datumDobijanja;
 	}
 

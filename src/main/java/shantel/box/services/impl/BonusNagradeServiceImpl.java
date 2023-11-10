@@ -46,4 +46,9 @@ public class BonusNagradeServiceImpl implements BonusNagradeService{
 		return bonusRepository.findByReceiverIsNotNull();
 	}
 
+	@Override
+	public List<BonusNagrade> findLastSevenNagrade() {
+		return bonusRepository.findLastSevenNagrade();
+	}
+
 }

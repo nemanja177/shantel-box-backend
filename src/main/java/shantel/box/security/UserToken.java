@@ -19,7 +19,7 @@ public class UserToken {
 		private String APP_NAME;
 
 		
-		@Value("EQ8UuS3fVSKvxXDusPeA7w5ryy333zCe")
+		@Value("EQ8UuS3fVSKvxXDusPeA7w5ryy333zC1")
 		public String SECRET;
 
 		@Value("1200000")

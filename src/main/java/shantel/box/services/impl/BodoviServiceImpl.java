@@ -1,6 +1,11 @@
 package shantel.box.services.impl;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -22,7 +27,6 @@ import shantel.box.services.BonusNagradeService;
 import shantel.box.services.KorisnikService;
 
 @Service
-@Transactional
 public class BodoviServiceImpl implements BodoviService {
 	
 	@Autowired
@@ -74,7 +78,7 @@ public class BodoviServiceImpl implements BodoviService {
 	}
 
 	@Override
-	public Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, Date date) {
+	public Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, ZonedDateTime date) {
 		return bodoviRepository.findBodoviByKorisnikAndDatumDobijanja(username, date);
 	}
 
@@ -86,12 +90,15 @@ public class BodoviServiceImpl implements BodoviService {
 	@Override
 	public Bodovi getLastBod(Korisnik korisnik) {
 		Bodovi poslednjiBod = null;
+		System.out.println("KORISNIK MRTVI: " + korisnik);
 		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
-		Collections.sort(sortedList);
+//		Collections.sort(sortedList);
+		Collections.sort(sortedList, Collections.reverseOrder());
 		for( Bodovi bod : sortedList ) {
 			if ( bod.getSpecijalnaNagrada() == null || bod.getSpecijalnaNagrada().equals("10 Evra")) { //  || !bod.getSpecijalnaNagrada().equalsIgnoreCase("poeni")
 				poslednjiBod = bod;
+				break;
 			}
 		}
 		return poslednjiBod;
@@ -99,10 +106,26 @@ public class BodoviServiceImpl implements BodoviService {
 	 
 	@Override
 	public boolean checker(Korisnik korisnik, Bodovi poslednjiBod) {
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date datum = new Date();
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//		Date datum = new Date();
+//		LocalDateTime currentDateTime = LocalDateTime.now();
+//		LocalDate currentDate = currentDateTime.toLocalDate();
+//		System.out.println("TRENUTNO VREME: " + currentDateTime);
+		
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); 
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+        LocalDate todaysDate = now.toLocalDate();
+		
+//        System.out.println("TRENUTNO VREME SA ZONAMA: " + zonedDateTime1);
 		boolean canOpen = false;
-		if ( !formatter.format(datum).equals(formatter.format(poslednjiBod.getDatumDobijanja()))) {
+//		int comparisonResult = currentDate.compareTo(poslednjiBod.getDatumDobijanja().toLocalDate());
+		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
+		System.out.println(poslednjiBod);
+		System.out.println("DATUM DANASNJI: " + todaysDate);
+		System.out.println("DATUM DANASNJI SA VREMENOM: " + now);
+//		System.out.println(todaysDate.isEqual(poslednjiBod.getDatumDobijanja().toLocalDate()));
+		if ( !todaysDate.isEqual(poslednjiBod.getDatumDobijanja().toLocalDate())  ) {
 			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
 			try {
 				if ( bonusNagrada.getReceiver() != null ) {
@@ -121,7 +144,7 @@ public class BodoviServiceImpl implements BodoviService {
 				canOpen = false;
 			}
 			try {
-				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") ) {
+				if ( poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("poeni") || poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("gift") || poslednjiBod.getSpecijalnaNagrada().equalsIgnoreCase("sent gift")) {
 					canOpen = true;
 				} else {
 					canOpen = false;
@@ -152,22 +175,37 @@ public class BodoviServiceImpl implements BodoviService {
 	}
 	
 	@Override
-	@Scheduled(cron = "0 0 0 * * ?")
+	@Scheduled(cron = "55 59 23 * * ?", zone = "Europe/Belgrade")
 	public void testSchedule() {
 		
-		Calendar now = Calendar.getInstance();
+//		Calendar now = Calendar.getInstance();
 //		int brojDana = now.get(Calendar.DAY_OF_YEAR);
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		
-		now.add(Calendar.DAY_OF_MONTH, -1);
+//		Calendar now = Calendar.getInstance();
+		
+		
+//		Date date = new Date();
+//		
+//		
+//		LocalDateTime currentDateTime = LocalDateTime.now();
+		
+		
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+//		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		
+//		now.add(Calendar.DAY_OF_MONTH, -1);
         
         // Get yesterday's date
-        Date yesterdayDate = now.getTime();
+//        Date yesterdayDate = now.getTime();
 		
 		List<Korisnik> didntOpen = unoppenedBoxUsers();
 //		Date datum = new Date();
 		for (Korisnik korisnik : didntOpen) {
 			if ( !korisnik.getUsername().equals("djura")) {
-				Bodovi bod = new Bodovi(-200, yesterdayDate, null, korisnik);
+				Bodovi bod = new Bodovi(-200, now, null, korisnik);
 				save(bod);
 			}
 			System.out.println(korisnik.getUsername());

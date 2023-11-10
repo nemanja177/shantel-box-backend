@@ -1,5 +1,7 @@
 package shantel.box.dto;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import shantel.box.model.Korisnik;
@@ -10,8 +12,8 @@ public class PoklonKodDTO {
 	private Korisnik receiver;
 	private String bonusCode;
 	private int numberOfPoints;
-	private Date generatedDate;
-	private Date activatedDate;
+	private ZonedDateTime generatedDate;
+	private ZonedDateTime activatedDate;
 	private Boolean isValid;
 	
 	public PoklonKodDTO(PoklonKod poklonKod) {
@@ -56,19 +58,19 @@ public class PoklonKodDTO {
 		this.numberOfPoints = numberOfPoints;
 	}
 
-	public Date getGeneratedDate() {
+	public ZonedDateTime getGeneratedDate() {
 		return generatedDate;
 	}
 
-	public void setGeneratedDate(Date generatedDate) {
+	public void setGeneratedDate(ZonedDateTime generatedDate) {
 		this.generatedDate = generatedDate;
 	}
 
-	public Date getActivatedDate() {
+	public ZonedDateTime getActivatedDate() {
 		return activatedDate;
 	}
 
-	public void setActivatedDate(Date activatedDate) {
+	public void setActivatedDate(ZonedDateTime activatedDate) {
 		this.activatedDate = activatedDate;
 	}
 

@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -45,7 +49,7 @@ import shantel.box.services.PoklonKodService;
 @CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 public class GiftCodeController {
 	
-	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+//	SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 
 	@Autowired
 	private PoklonKodService poklonKodService;
@@ -61,6 +65,8 @@ public class GiftCodeController {
 	@PostMapping(value = "/getCode")
 	@JsonIgnore
 	public ResponseEntity<PoklonKodDTO> getKod(@AuthenticationPrincipal Korisnik sender, HttpSession session) {
+		
+		
 		
 		List<PoklonKod> poklonKodovi = poklonKodService.findPoklonKodBySenderId(sender.getId());
 		PoklonKod poklonKod;
@@ -83,13 +89,26 @@ public class GiftCodeController {
 //			poklonKodService.save(poklonKod);
 //			System.out.println("INFO FIRST: " + poklonKod);
 //		}
+		int comparisonResult = 0;
+//		LocalDateTime currentDateTime = LocalDateTime.now();
+//		LocalDate currentDate = currentDateTime.toLocalDate();
 		
-		poklonKod = checkCode(poklonKod);
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+        LocalDate todaysDate = now.toLocalDate();
+		
+		if ( poklonKod != null ) {
+			poklonKod = checkCode(poklonKod);
+			comparisonResult = todaysDate.compareTo(poklonKod.getGeneratedDate().toLocalDate());
+		}
+			
+		
 		
 		if ( poklonKod == null || poklonKod.getIsValid() == false) {
-			Date date = new Date();
+//			Date date = new Date();
 //			System.out.println("INFO SECOND: " + poklonKod);
-			if (poklonKod == null || !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))){
+			if (poklonKod == null || comparisonResult != 0) {
 				List<Korisnik> sviKorisnici = korisnikService.findAll(); 
 				
 				// for excluding debug user //
@@ -111,9 +130,9 @@ public class GiftCodeController {
 				Random rand2 = new Random();
 				int randomPoints = rand2.nextInt(41) - 10;
 				
-				Date datumDobijanja = new Date();
+//				Date datumDobijanja = new Date();
 //				Korisnik korisnik = new Korisnik(sender);
-				PoklonKod newPoklonKod = new PoklonKod(sender, receiver, code, randomPoints, datumDobijanja, true);
+				PoklonKod newPoklonKod = new PoklonKod(sender, receiver, code, randomPoints, now, true);
 				PoklonKodDTO poklonKodDTO = new PoklonKodDTO(newPoklonKod);
 				poklonKodService.save(newPoklonKod);
 				return new ResponseEntity<PoklonKodDTO>(poklonKodDTO, HttpStatus.OK);
@@ -124,8 +143,11 @@ public class GiftCodeController {
 	
 	
 	public PoklonKod checkCode(PoklonKod poklonKod) {
-		Date date = new Date();
-		if ( poklonKod != null && poklonKod.getActivatedDate() == null && !formatter.format(date).equals(formatter.format(poklonKod.getGeneratedDate()))) {
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		LocalDate currentDate = currentDateTime.toLocalDate();
+//		Date date = new Date();
+		int comparisonResult = currentDate.compareTo(poklonKod.getGeneratedDate().toLocalDate());
+		if ( poklonKod != null && poklonKod.getActivatedDate() == null && comparisonResult != 0) {
 			poklonKod.setIsValid(false);
 			poklonKodService.save(poklonKod);
 			System.out.println("NIJE VALIDAN: " + poklonKod);
@@ -208,13 +230,19 @@ public class GiftCodeController {
 			String code = (String) jsonstring.get("giftcode"); // wtf
 			PoklonKod poklonKod = poklonKodService.findKodByCode(code);
 			poklonKod = checkCode(poklonKod);
-			System.out.println(receiver + " ==== " + jsonstring.get("giftcode") );  /// stavi da istenke ukoliko je trenutan datum veci od dana kad je kod generisan + 1 dan -- stavljeno
+			System.out.println(receiver.getIme() + " ==== " + jsonstring.get("giftcode") );  /// stavi da istenke ukoliko je trenutan datum veci od dana kad je kod generisan + 1 dan -- stavljeno
 			if (poklonKod.getIsValid()) {
 				if (poklonKod.getReceiver().getUsername().equals(receiver.getUsername())) {
-					Date datumAktiviranja = new Date();
-					Bodovi poklonBod = new Bodovi(poklonKod.getNumberOfPoints(), datumAktiviranja, "Gift", receiver);
-					Bodovi bodZaPosiljaoca = new Bodovi(30, datumAktiviranja, "Sent Gift", poklonKod.getSender());
-					poklonKod.setActivatedDate(datumAktiviranja);
+					
+					ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
+
+			        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+//					LocalDateTime currentDateTime = LocalDateTime.now();
+//					LocalDate currentDate = currentDateTime.toLocalDate();
+//					Date datumAktiviranja = new Date();
+					Bodovi poklonBod = new Bodovi(poklonKod.getNumberOfPoints(), now, "Gift", receiver);
+					Bodovi bodZaPosiljaoca = new Bodovi(30, now, "Sent Gift", poklonKod.getSender());
+					poklonKod.setActivatedDate(now);
 					poklonKod.setIsValid(false);
 					poklonKodService.save(poklonKod);
 					bodoviService.save(poklonBod);

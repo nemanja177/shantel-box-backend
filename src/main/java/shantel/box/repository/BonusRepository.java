@@ -14,6 +14,9 @@ public interface BonusRepository extends JpaRepository<BonusNagrade, Integer>{
 
 	List<BonusNagrade> findAll();
 	
+	@Query( value = "SELECT * from bonus_nagrade ORDER BY bonus_id DESC LIMIT 7", nativeQuery = true)
+	List<BonusNagrade> findLastSevenNagrade();
+	
 	List<BonusNagrade> findBonusNagradeByReceiver(Korisnik receiver);
 	
 	BonusNagrade findBonusNagradeById(Integer id);

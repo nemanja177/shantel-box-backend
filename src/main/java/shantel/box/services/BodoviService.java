@@ -1,6 +1,8 @@
 package shantel.box.services;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public interface BodoviService {
 	
 	Bodovi findBodoviByKorisnik(String username);
 	
-	Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, Date date);
+	Bodovi findBodoviByKorisnikAndDatumDobijanja(String username, ZonedDateTime date);
 	
 	List<Bodovi> findAll();
 	

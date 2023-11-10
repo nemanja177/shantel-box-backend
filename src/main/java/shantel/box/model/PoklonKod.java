@@ -1,5 +1,7 @@
 package shantel.box.model;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -40,10 +42,10 @@ public class PoklonKod {
 	private int numberOfPoints;
 	
 	@Column(name = "generatedDate", unique = false, nullable = false)
-	private Date generatedDate;
+	private ZonedDateTime generatedDate;
 	
 	@Column(name = "activatedDate", unique = false, nullable = true)
-	private Date activatedDate;
+	private ZonedDateTime activatedDate;
 	
 	@Column(name = "isValid", unique = false, nullable = false)
 	private Boolean isValid;
@@ -51,7 +53,7 @@ public class PoklonKod {
 	public PoklonKod() {}
 
 	public PoklonKod(Integer id, Korisnik sender, Korisnik receiver, String code, int numberOfPoints,
-			Date generatedDate, Date activatedDate, Boolean isValid) {
+			ZonedDateTime generatedDate, ZonedDateTime activatedDate, Boolean isValid) {
 		super();
 		this.id = id;
 		this.sender = sender;
@@ -63,7 +65,7 @@ public class PoklonKod {
 		this.isValid = isValid;
 	}
 
-	public PoklonKod(Korisnik sender, Korisnik receiver, String code, int numberOfPoints, Date generatedDate,
+	public PoklonKod(Korisnik sender, Korisnik receiver, String code, int numberOfPoints, ZonedDateTime generatedDate,
 			Boolean isValid) {
 		super();
 		this.sender = sender;
@@ -114,19 +116,19 @@ public class PoklonKod {
 		this.numberOfPoints = numberOfPoints;
 	}
 
-	public Date getGeneratedDate() {
+	public ZonedDateTime getGeneratedDate() {
 		return generatedDate;
 	}
 
-	public void setGeneratedDate(Date generatedDate) {
+	public void setGeneratedDate(ZonedDateTime generatedDate) {
 		this.generatedDate = generatedDate;
 	}
 
-	public Date getActivatedDate() {
+	public ZonedDateTime getActivatedDate() {
 		return activatedDate;
 	}
 
-	public void setActivatedDate(Date activatedDate) {
+	public void setActivatedDate(ZonedDateTime activatedDate) {
 		this.activatedDate = activatedDate;
 	}
 

@@ -1,5 +1,7 @@
 package shantel.box.model;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Set;
 
@@ -53,7 +55,7 @@ public class BonusNagrade implements Comparable<BonusNagrade>{
 	private int bonusValue;
 	
 	@Column(name = "date", unique = false, nullable = false)
-	private Date date;
+	private ZonedDateTime date;
 	
 	@Column(name = "random_selected_users", unique = false, nullable = true)
 	private String randomSelectedUsers;
@@ -70,7 +72,7 @@ public class BonusNagrade implements Comparable<BonusNagrade>{
 	}
 
 
-	public BonusNagrade(Korisnik sender, String bonusType, int bonusValue, Date date, String randomSelectedUsers) {
+	public BonusNagrade(Korisnik sender, String bonusType, int bonusValue, ZonedDateTime date, String randomSelectedUsers) {
 		super();
 		this.sender = sender;
 		this.bonusType = bonusType;
@@ -79,7 +81,7 @@ public class BonusNagrade implements Comparable<BonusNagrade>{
 		this.randomSelectedUsers = randomSelectedUsers;
 	}
 
-	public BonusNagrade(Korisnik sender, Korisnik receiver, String bonusType, int bonusValue, Date date,
+	public BonusNagrade(Korisnik sender, Korisnik receiver, String bonusType, int bonusValue, ZonedDateTime date,
 		String randomSelectedUsers) {
 		super();
 		this.sender = sender;
@@ -90,7 +92,7 @@ public class BonusNagrade implements Comparable<BonusNagrade>{
 		this.randomSelectedUsers = randomSelectedUsers;
 	}
 
-	public BonusNagrade(Korisnik sender, String bonusType, int bonusValue, Date date) {
+	public BonusNagrade(Korisnik sender, String bonusType, int bonusValue, ZonedDateTime date) {
 		super();
 		this.sender = sender;
 		this.bonusType = bonusType;
@@ -148,12 +150,12 @@ public class BonusNagrade implements Comparable<BonusNagrade>{
 	}
 
 
-	public Date getDate() {
+	public ZonedDateTime getDate() {
 		return date;
 	}
 
 
-	public void setDate(Date date) {
+	public void setDate(ZonedDateTime date) {
 		this.date = date;
 	}
 

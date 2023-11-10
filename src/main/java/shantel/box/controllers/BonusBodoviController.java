@@ -1,6 +1,10 @@
 package shantel.box.controllers;
 
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -16,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -48,8 +54,12 @@ public class BonusBodoviController {
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/randomUsers")
-	public ResponseEntity<List<Korisnik>> getRandomUsers(HttpSession session) {
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+	public ResponseEntity<List<Korisnik>> getRandomUsers(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+//		Korisnik sender = korisnikService.findKorisnikByUsername(username);
+		
+		String username = userDetails.getUsername();
+
 		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 		List<Korisnik> sviKorisnici = korisnikService.findAll(); 
 		List<Korisnik> randomKorisnici = new ArrayList<>();
@@ -108,9 +118,11 @@ public class BonusBodoviController {
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/hasSendGift")
-	public ResponseEntity<Boolean> hasSendGift(HttpSession session) {
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+	public ResponseEntity<Boolean> hasSendGift(@AuthenticationPrincipal UserDetails userDetails, HttpSession session) {
+		String username = userDetails.getUsername();
 		Korisnik sender = korisnikService.findKorisnikByUsername(username);
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+//		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 		System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");
 		
 		if (bonusNagradeService.findEmptyReceivers(sender) == null ) {
@@ -129,12 +141,14 @@ public class BonusBodoviController {
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@PostMapping(value = "/chosen")
-	public ResponseEntity<Boolean> chooseUser(@RequestParam("id") int id, HttpSession session) {	
+	public ResponseEntity<Boolean> chooseUser(@RequestParam("id") int id,@AuthenticationPrincipal UserDetails userDetails ,HttpSession session) {	
 		Korisnik receiver = korisnikService.findKorisnikById(id);
+		String username = userDetails.getUsername();
+		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 		System.out.println("--------------------------------------------------------------------");
 		System.out.println("RECEIVER: " + receiver);
-		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
-		Korisnik sender = korisnikService.findKorisnikByUsername(username);
+//		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
+//		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 //		Korisnik sender = findCurrentKorisnik(session);
 		
 		
@@ -143,7 +157,12 @@ public class BonusBodoviController {
 			System.out.println("--------------------------------------------------------------------");
 			System.out.println("Bonus Nagrada: " + bonusNagrada);
 			
-			Date datum = new Date();
+//			LocalDateTime currentDateTime = LocalDateTime.now();
+			
+			ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
+
+	        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+			
 			
 //			String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 //			Korisnik sender = korisnikService.findKorisnikByUsername(username);
@@ -153,7 +172,7 @@ public class BonusBodoviController {
 			
 			bonusNagrada.setReceiver(receiver);
 			System.out.println(bonusNagrada);
-			Bodovi bod = new Bodovi(bonusValue, datum, "Poeni", receiver);
+			Bodovi bod = new Bodovi(bonusValue, now, "Poeni", receiver);
 			bod.setSpecijalnaNagrada(bonusType);
 			bonusNagradeService.save(bonusNagrada);
 			bodoviService.save(bod);
@@ -175,16 +194,23 @@ public class BonusBodoviController {
 	@GetMapping(value = "/allDailyBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllDailyBonus() {
 		
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		LocalDate currentDate = currentDateTime.toLocalDate();
+		
+//		Date date = new Date();
+//		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
 		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
 		Collections.sort(sveBonusNagrade);
 		Collections.reverse(sveBonusNagrade);
 		List<BonusNagradeDTO> dtoList = new ArrayList<>();
 		for (BonusNagrade nagrade: sveBonusNagrade) {
-			if ( formatter.format(nagrade.getDate()).equals(formatter.format(date))) {
+			int comparisonResult = currentDate.compareTo(nagrade.getDate().toLocalDate());
+			if ( comparisonResult == 0 ) {
 				dtoList.add(new BonusNagradeDTO(nagrade));
-			}	
+			} 
+//			if ( formatter.format(nagrade.getDate()).equals(formatter.format(date))) {
+//				
+//			}	
 		}
 //		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 7);
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
@@ -252,9 +278,15 @@ public class BonusBodoviController {
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allYesterdayBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllYesterdayBonuses() {
-
-		Calendar now = Calendar.getInstance();
-		int brojDana = now.get(Calendar.DAY_OF_YEAR);
+		
+		
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		LocalDate currentDate = currentDateTime.toLocalDate();
+		
+		LocalDate yesterday = currentDate.minusDays(1);
+		
+//		Calendar now = Calendar.getInstance();
+//		int brojDana = now.get(Calendar.DAY_OF_YEAR);
 		
 		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
 		Collections.sort(sveBonusNagrade);
@@ -263,8 +295,8 @@ public class BonusBodoviController {
 		List<BonusNagradeDTO> dtoList = new ArrayList<>();
 		
 		for (BonusNagrade nagrade: sveBonusNagrade) {
-			now.setTime(nagrade.getDate());
-			if ( now.get(Calendar.DAY_OF_YEAR) == (brojDana - 1)) {
+//			now.setTime(nagrade.getDate());
+			if ( yesterday.getDayOfYear() == nagrade.getDate().getDayOfYear() && yesterday.getYear() == nagrade.getDate().getYear()) {
 				dtoList.add(new BonusNagradeDTO(nagrade));
 			}	
 		}
@@ -276,15 +308,20 @@ public class BonusBodoviController {
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allMontlyBonuses")
 	public ResponseEntity<List<Korisnik>> getAllBonus() {
+		
+		LocalDateTime currentDateTime = LocalDateTime.now();
+		LocalDate currentDate = currentDateTime.toLocalDate();
+		
 		List<Korisnik> korisnici = new ArrayList<>();
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
-		Calendar now = Calendar.getInstance();
-		int month = now.get(Calendar.MONTH);
+//		Calendar now = Calendar.getInstance();
+//		int month = now.get(Calendar.MONTH);
 		for ( Korisnik korisnik : sviKorisnici) {
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> bonusBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
-				if ( bod.getDatumDobijanja().getMonth() == month ) {
+//				int isSame = currentDate.compareTo(bod.getDatumDobijanja().toLocalDate());
+				if ( bod.getDatumDobijanja().getMonth() == currentDate.getMonth() && bod.getDatumDobijanja().getYear() == currentDate.getYear() ) {
 					try {
 						if (bod.getSpecijalnaNagrada().equals("Poeni")) {
 							bonusBodovi.add(bod);
@@ -308,9 +345,7 @@ public class BonusBodoviController {
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/dailyRecentBonus")
 	public ResponseEntity<List<BonusNagradeDTO>> bonusi() {
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findAll();
+		List<BonusNagrade> sveBonusNagrade = bonusNagradeService.findLastSevenNagrade();
 		Collections.sort(sveBonusNagrade);
 		Collections.reverse(sveBonusNagrade);
 		List<BonusNagradeDTO> dtoList = new ArrayList<>();
@@ -319,7 +354,7 @@ public class BonusBodoviController {
 				dtoList.add(new BonusNagradeDTO(nagrade));
 //			}	
 		}
-		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 7);
-		return new ResponseEntity<>(subListBonusBodovi, HttpStatus.OK);
+//		List<BonusNagradeDTO> subListBonusBodovi = dtoList.subList(0, 7);
+		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 }

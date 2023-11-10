@@ -18,4 +18,6 @@ public interface BonusNagradeService {
 	BonusNagrade findEmptyReceivers(Korisnik sender);
 
 	List<BonusNagrade> findByReceiverIsNotNull();
+	
+	List<BonusNagrade> findLastSevenNagrade();
 }
