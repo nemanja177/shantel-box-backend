@@ -1,5 +1,6 @@
 package shantel.box.model;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -22,10 +23,10 @@ public class ApplicationStatus {
 	private String message;
 	
 	@Column(name = "date_start", unique = false, nullable = false )
-	private Date dateStart;
+	private ZonedDateTime dateStart;
 	
 	@Column(name = "date_end", unique = false, nullable = false )
-	private Date dateEnd;
+	private ZonedDateTime dateEnd;
 	
 	@Column(name = "valid", unique = false, nullable = false )
 	private Boolean active;
@@ -34,7 +35,7 @@ public class ApplicationStatus {
 		super();
 	}
 
-	public ApplicationStatus(Integer id, String message, Date dateStart, Date dateEnd, Boolean active) {
+	public ApplicationStatus(Integer id, String message, ZonedDateTime dateStart, ZonedDateTime dateEnd, Boolean active) {
 		super();
 		this.id = id;
 		this.message = message;
@@ -43,7 +44,7 @@ public class ApplicationStatus {
 		this.active = active;
 	}
 
-	public ApplicationStatus(String message, Date dateStart, Date dateEnd, Boolean active) {
+	public ApplicationStatus(String message, ZonedDateTime dateStart, ZonedDateTime dateEnd, Boolean active) {
 		super();
 		this.message = message;
 		this.dateStart = dateStart;
@@ -67,19 +68,19 @@ public class ApplicationStatus {
 		this.message = message;
 	}
 
-	public Date getDateStart() {
+	public ZonedDateTime getDateStart() {
 		return dateStart;
 	}
 
-	public void setDateStart(Date dateStart) {
+	public void setDateStart(ZonedDateTime dateStart) {
 		this.dateStart = dateStart;
 	}
 
-	public Date getDateEnd() {
+	public ZonedDateTime getDateEnd() {
 		return dateEnd;
 	}
 
-	public void setDateEnd(Date dateEnd) {
+	public void setDateEnd(ZonedDateTime dateEnd) {
 		this.dateEnd = dateEnd;
 	}
 

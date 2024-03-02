@@ -15,4 +15,8 @@ public interface PoklonKodService {
 	PoklonKod findKodByCode(String code);
 	
 	List<PoklonKod> findPoklonKodBySenderId(Integer id);
+	
+//	String findSenderPushToken(Integer id);
+//	
+//	void updateExpoPushToken(Integer poklonKodId, String pushToken);
 }

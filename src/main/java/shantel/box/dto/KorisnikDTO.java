@@ -1,37 +1,27 @@
 package shantel.box.dto;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import shantel.box.model.Bodovi;
 import shantel.box.model.Korisnik;
 
 
-public class KorisnikDTO implements Serializable{
-	private Integer id;
+public class KorisnikDTO implements Comparable<KorisnikDTO>{
 	private String ime;
 	private String prezime;
 	private String username;
 	private String email;
-	private String password;
-	private boolean dozvoljen;
 	private String slika;
+	private Set<Bodovi> bodovi;
 	
 	public KorisnikDTO(Korisnik korisnik) {
-		id = korisnik.getId();
 		ime = korisnik.getIme();
 		prezime = korisnik.getPrezime();
 		username = korisnik.getUsername();
 		email = korisnik.getEmail();
-		password = korisnik.getPassword();
-		dozvoljen = korisnik.isDozvoljen();
 		slika = korisnik.getSlika();
-	}
-
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
+		bodovi = korisnik.getBodovi();
 	}
 
 	public String getIme() {
@@ -58,28 +48,12 @@ public class KorisnikDTO implements Serializable{
 		this.username = username;
 	}
 
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
 	public String getEmail() {
 		return email;
 	}
 
 	public void setEmail(String email) {
 		this.email = email;
-	}
-
-	public boolean isDozvoljen() {
-		return dozvoljen;
-	}
-
-	public void setDozvoljen(boolean dozvoljen) {
-		this.dozvoljen = dozvoljen;
 	}
 
 	public String getSlika() {
@@ -90,10 +64,41 @@ public class KorisnikDTO implements Serializable{
 		this.slika = slika;
 	}
 
+	public Set<Bodovi> getBodovi() {
+		return bodovi;
+	}
+
+	public void setBodovi(Set<Bodovi> bodovi) {
+		this.bodovi = bodovi;
+	}
+	
 	@Override
 	public String toString() {
-		return "KorisnikDTO [id=" + id + ", ime=" + ime + ", prezime=" + prezime + ", username=" + username + ", email="
-				+ email + ", password=" + password + ", dozvoljen=" + dozvoljen + ", slika=" + slika + "]";
+		return "KorisnikDTO [ime=" + ime + ", prezime=" + prezime + ", username=" + username + ", email=" + email
+				+ ", slika=" + slika + ", bodovi=" + bodovi + "]";
 	}
+
+	@Override
+	public int compareTo(KorisnikDTO o) {
+		int thisBrojBodova = 0;
+		int oBrojBodova = 0;
+		for ( Bodovi bod: this.getBodovi()) {
+			thisBrojBodova += bod.getBrojBodova();
+		}
+		
+		for ( Bodovi bod: o.getBodovi()) {
+			oBrojBodova += bod.getBrojBodova();
+		}
+		
+		if (thisBrojBodova == oBrojBodova) {
+            return 0;
+        } else if (thisBrojBodova > oBrojBodova) {
+            return 1;
+        } else {
+            return -1;
+        }
+	}
+
+	
 	
 }

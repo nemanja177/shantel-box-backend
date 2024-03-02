@@ -2,6 +2,8 @@ package shantel.box.controllers;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,6 +28,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +40,9 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import shantel.box.dto.ApplicationStatusDTO;
+import shantel.box.dto.KorisnikDTO;
+import shantel.box.dto.UpdateExpoPushTokenRequest;
+import shantel.box.dto.UserLoginResponseDTO;
 import shantel.box.exception.ResourceConflictException;
 import shantel.box.model.ApplicationStatus;
 import shantel.box.model.Korisnik;
@@ -81,9 +87,12 @@ public class AuthenticationController {
 	
 	private ApplicationStatus getApplicationStatus() {
 //		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-		Date date = new Date();
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+//		Date date = new Date();
 //		System.out.println("DANASNJI DATUM: " + date);
-		ApplicationStatus appStatus = appStatusService.checkIsAppUnlocked(date);
+		ApplicationStatus appStatus = appStatusService.checkIsAppUnlocked(now);
 		return appStatus;
 	}
 	
@@ -113,7 +122,9 @@ public class AuthenticationController {
 //					.map(item -> item.getAuthority())
 //					.collect(Collectors.toList());
 			System.out.println("AUTORITIEZ: " + user.getAuthoritiesAsString());
-			return new ResponseEntity<>(new UserTokenState(jwt, expiresIn), HttpStatus.OK);
+//			return new ResponseEntity<>(new UserTokenState(jwt, expiresIn), HttpStatus.OK);
+			UserLoginResponseDTO responseDTO = new UserLoginResponseDTO(new UserTokenState(jwt, expiresIn), new KorisnikDTO(user));
+			return new ResponseEntity<>(responseDTO, HttpStatus.OK);
 		}
 			
 //			return ResponseEntity.ok(new UserTokenState(jwt, expiresIn));
@@ -134,7 +145,7 @@ public class AuthenticationController {
 			throw new ResourceConflictException(korisnik.getId(), "Username already exists");
 		}
 
-		Korisnik noviKorisnik = new Korisnik(korisnik.getIme(), korisnik.getPrezime(), korisnik.getUsername(), korisnik.getEmail(), passwordEndcoder.encode(korisnik.getPassword()), true, korisnik.getSlika());
+		Korisnik noviKorisnik = new Korisnik(korisnik.getIme(), korisnik.getPrezime(), korisnik.getUsername(), korisnik.getEmail(), passwordEndcoder.encode(korisnik.getPassword()), true, korisnik.getSlika(), false);
 		korisnikService.save(noviKorisnik);
 //		HttpHeaders headers = new HttpHeaders();
 //		headers.setLocation(ucBuilder.path("/dostava/korisnik/{userId}").buildAndExpand(korisnik.getId()).toUri());
@@ -214,4 +225,15 @@ public class AuthenticationController {
 		System.out.println(password);
 		System.out.println(passwordEndcoder.encode(password));
 	}
+	
+	@PostMapping(value ="/updateExpoPushToken")
+    public ResponseEntity<?> updateExpoPushToken(@RequestBody UpdateExpoPushTokenRequest request, @AuthenticationPrincipal UserDetails userDetails) {
+		Korisnik korisnik = korisnikService.findKorisnikByUsername(userDetails.getUsername());
+        try {
+            korisnikService.updateExpoPushToken(korisnik.getId(), request.getExpoPushToken());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }

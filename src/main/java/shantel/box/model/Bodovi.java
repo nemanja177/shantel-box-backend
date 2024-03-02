@@ -32,7 +32,7 @@ public class Bodovi implements Comparable<Bodovi>{
 	@Column(name = "brojBodova", unique = false, nullable = false)
 	private int brojBodova;
 	
-	@Column(name = "datumDobijanja", unique = false, nullable = false)
+	@Column(name = "datumDobijanja", columnDefinition = "TIMESTAMP",  unique = false, nullable = false)
 	private ZonedDateTime datumDobijanja;
 	
 	@Column(name = "specijalnaNagrada", unique = false, nullable = true)
@@ -124,7 +124,6 @@ public class Bodovi implements Comparable<Bodovi>{
 		this.specijalnaNagrada = specijalnaNagrada;
 	}
 
-	
 
 	@Override
 	public String toString() {

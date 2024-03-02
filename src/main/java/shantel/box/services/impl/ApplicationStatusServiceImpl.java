@@ -1,5 +1,6 @@
 package shantel.box.services.impl;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class ApplicationStatusServiceImpl implements ApplicationStatusService {
 	}
 
 	@Override
-	public ApplicationStatus checkIsAppUnlocked(Date currentDate) {
+	public ApplicationStatus checkIsAppUnlocked(ZonedDateTime currentDate) {
 		return appStatusRepository.findApplicationStatusByDateEndGreaterThanEqualAndDateStartLessThanEqual(currentDate, currentDate);
 	}
 

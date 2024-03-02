@@ -19,5 +19,7 @@ public interface PoklonKodRepository extends JpaRepository<PoklonKod, Integer>{
 	List<PoklonKod> findPoklonKodByReceiverIdAndActivatedDateIsNotNull(Integer id);
 	
 	PoklonKod findPoklonKodBybonusCode(String bonusCode);
+	
+//	PoklonKod findByPushToken(String pushToken);
 
 }

@@ -75,7 +75,7 @@ public class PoklonKod {
 		this.generatedDate = generatedDate;
 		this.isValid = isValid;
 	}
-
+	
 	public Integer getId() {
 		return id;
 	}

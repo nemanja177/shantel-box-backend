@@ -1,5 +1,6 @@
 package shantel.box.repository;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public interface ApplicationStatusRepository extends JpaRepository<ApplicationSt
 	
 	ApplicationStatus findApplicationStatusByActiveTrue();
 	
-	ApplicationStatus findApplicationStatusByDateEndGreaterThanEqualAndDateStartLessThanEqual(Date currentDate1, Date currentDate2);
+	ApplicationStatus findApplicationStatusByDateEndGreaterThanEqualAndDateStartLessThanEqual(ZonedDateTime currentDate1, ZonedDateTime currentDate2);
 	
 //	ApplicationStatus findApplicationStatusByDateStartAfterAndDateEndBefore(Date currentDate1, Date currentDate2);
 	

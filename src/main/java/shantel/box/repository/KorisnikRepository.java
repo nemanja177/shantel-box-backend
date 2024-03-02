@@ -15,4 +15,8 @@ public interface KorisnikRepository extends JpaRepository<Korisnik, Integer>{
 	List<Korisnik> findAll();
 	
 	Korisnik findKorisnikById(Integer id);
+	
+	Korisnik findByExpoPushToken(String expoPushToken);
+	
+	Korisnik findByNosacPlamenaTrue();
 }

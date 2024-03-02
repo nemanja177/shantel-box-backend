@@ -3,6 +3,7 @@ package shantel.box.services.impl;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -90,7 +91,7 @@ public class BodoviServiceImpl implements BodoviService {
 	@Override
 	public Bodovi getLastBod(Korisnik korisnik) {
 		Bodovi poslednjiBod = null;
-		System.out.println("KORISNIK MRTVI: " + korisnik);
+//		System.out.println("KORISNIK MRTVI: " + korisnik);
 		Set<Bodovi> korisnickiBodovi = korisnik.getBodovi();
 		List<Bodovi> sortedList = new ArrayList<>(korisnickiBodovi);
 //		Collections.sort(sortedList);
@@ -120,12 +121,22 @@ public class BodoviServiceImpl implements BodoviService {
 //        System.out.println("TRENUTNO VREME SA ZONAMA: " + zonedDateTime1);
 		boolean canOpen = false;
 //		int comparisonResult = currentDate.compareTo(poslednjiBod.getDatumDobijanja().toLocalDate());
-		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
-		System.out.println(poslednjiBod);
-		System.out.println("DATUM DANASNJI: " + todaysDate);
-		System.out.println("DATUM DANASNJI SA VREMENOM: " + now);
+//		System.out.println("DATUM POSLEDNJEG BODA: " + poslednjiBod.getDatumDobijanja());
+//		System.out.println(poslednjiBod);
+//		System.out.println("DATUM DANASNJI: " + todaysDate);
+//		System.out.println("DATUM DANASNJI SA VREMENOM: " + now);
+//		OffsetDateTime offsetDateTime = poslednjiBod.getDatumDobijanja().toOffsetDateTime();
+//		ZonedDateTime entityDate = poslednjiBod.getDatumDobijanja().atZone(desiredTimeZone);
+		ZonedDateTime entityDate = poslednjiBod.getDatumDobijanja().withZoneSameInstant(desiredTimeZone);
+//		System.out.println("MRTVI DATUM BODA PREPRAVLJEN: " + entityDate);
+//		OffsetDateTime entityDate = poslednjiBod.getDatumDobijanja().atZone(desiredTimeZone).toOffsetDateTime();
+
+
+        // Display the results
+//        System.out.println("ZonedDateTime: " + zonedDateTime);
+//        System.out.println("OffsetDateTime: " + offsetDateTime);
 //		System.out.println(todaysDate.isEqual(poslednjiBod.getDatumDobijanja().toLocalDate()));
-		if ( !todaysDate.isEqual(poslednjiBod.getDatumDobijanja().toLocalDate())  ) {
+		if ( !todaysDate.isEqual(entityDate.toLocalDate())  ) {
 			BonusNagrade bonusNagrada = bonusNagradeService.findEmptyReceivers(korisnik);
 			try {
 				if ( bonusNagrada.getReceiver() != null ) {

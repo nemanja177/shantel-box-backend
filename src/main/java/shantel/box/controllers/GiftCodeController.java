@@ -36,12 +36,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import shantel.box.dto.KorisnikDTO;
+import shantel.box.dto.KorisnikDTOWithoutPoints;
 import shantel.box.dto.PoklonKodDTO;
 import shantel.box.model.Bodovi;
 import shantel.box.model.Korisnik;
 import shantel.box.model.PoklonKod;
 import shantel.box.services.BodoviService;
 import shantel.box.services.KorisnikService;
+import shantel.box.services.NotificationService;
 import shantel.box.services.PoklonKodService;
 
 @RestController
@@ -59,6 +61,9 @@ public class GiftCodeController {
 	
 	@Autowired
 	private BodoviService bodoviService;
+	
+	@Autowired
+	private NotificationService notificationService;
 	
 //	@SuppressWarnings("null")
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
@@ -100,7 +105,7 @@ public class GiftCodeController {
 		
 		if ( poklonKod != null ) {
 			poklonKod = checkCode(poklonKod);
-			comparisonResult = todaysDate.compareTo(poklonKod.getGeneratedDate().toLocalDate());
+			comparisonResult = todaysDate.compareTo(poklonKod.getGeneratedDate().withZoneSameInstant(desiredTimeZone).toLocalDate());
 		}
 			
 		
@@ -125,7 +130,7 @@ public class GiftCodeController {
 //				System.out.println("INFO FORTH: " + receiver);
 				
 				List<String> codesList = readCode();
-				String code = generateCode(codesList);
+				String code = generateCode(codesList, false);
 				
 				Random rand2 = new Random();
 				int randomPoints = rand2.nextInt(41) - 10;
@@ -143,10 +148,12 @@ public class GiftCodeController {
 	
 	
 	public PoklonKod checkCode(PoklonKod poklonKod) {
-		LocalDateTime currentDateTime = LocalDateTime.now();
-		LocalDate currentDate = currentDateTime.toLocalDate();
+		
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
+		ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+        LocalDate todaysDate = now.toLocalDate();
 //		Date date = new Date();
-		int comparisonResult = currentDate.compareTo(poklonKod.getGeneratedDate().toLocalDate());
+		int comparisonResult = todaysDate.compareTo(poklonKod.getGeneratedDate().withZoneSameInstant(desiredTimeZone).toLocalDate());
 		if ( poklonKod != null && poklonKod.getActivatedDate() == null && comparisonResult != 0) {
 			poklonKod.setIsValid(false);
 			poklonKodService.save(poklonKod);
@@ -204,7 +211,7 @@ public class GiftCodeController {
 		 return codesList;
 	}
 	
-	public String generateCode(List<String> codesList) {
+	public String generateCode(List<String> codesList, boolean isPlamen) {
 		String specialChars = "!@#$^*()_+=-";
 		Random rand = new Random();
 		int randomCodeIndex = rand.nextInt(codesList.size());
@@ -212,13 +219,37 @@ public class GiftCodeController {
 		int randomSpecChar2 = rand.nextInt(specialChars.length() - 1);
 		int randomSpecChar3 = rand.nextInt(specialChars.length() - 1);
 		int randomNumber = rand.nextInt(10000);
+		String code = "";
 //		String code = codesList.get(randomCodeIndex) + specialChars.substring(randomSpecChar) + specialChars.substring(randomSpecChar2) + randomNumber + specialChars.substring(randomSpecChar3);
-		String code = codesList.get(randomCodeIndex) + Character.toString(specialChars.charAt(randomSpecChar)) + randomNumber + Character.toString(specialChars.charAt(randomSpecChar2)) + Character.toString(specialChars.charAt(randomSpecChar3));
+		code = codesList.get(randomCodeIndex) + Character.toString(specialChars.charAt(randomSpecChar)) + randomNumber + Character.toString(specialChars.charAt(randomSpecChar2)) + Character.toString(specialChars.charAt(randomSpecChar3));
+		if ( isPlamen ) {
+			code = "PLAMEN_" + codesList.get(randomCodeIndex) + Character.toString(specialChars.charAt(randomSpecChar)) + randomNumber + Character.toString(specialChars.charAt(randomSpecChar2));
+		}
 		return code;
 	}
 	
 	
-	public boolean validateKod(PoklonKod poklonKod, Korisnik receiver) {
+	
+	public boolean validateKod(Korisnik receiver, PoklonKod poklonKod) {
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
+
+        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+        LocalDate todaysDate = now.toLocalDate();
+		
+        int comparisonResult = 0;
+        
+		if ( poklonKod != null ) {
+			poklonKod = checkCode(poklonKod);
+			comparisonResult = todaysDate.compareTo(poklonKod.getGeneratedDate().withZoneSameInstant(desiredTimeZone).toLocalDate());
+		}
+		
+		if ( poklonKod == null || poklonKod.getIsValid() == false) {
+			if (poklonKod == null || comparisonResult != 0) {
+				return true;
+			}
+			return false;
+		}
+		
 		return false;
 	}
 	
@@ -234,16 +265,22 @@ public class GiftCodeController {
 			if (poklonKod.getIsValid()) {
 				if (poklonKod.getReceiver().getUsername().equals(receiver.getUsername())) {
 					
-					ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); // Replace with your desired time zone
-
+					ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
 			        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
-//					LocalDateTime currentDateTime = LocalDateTime.now();
-//					LocalDate currentDate = currentDateTime.toLocalDate();
-//					Date datumAktiviranja = new Date();
+			        String senderPushToken = korisnikService.findExpoPushToken(poklonKod.getSender().getId());
+			        System.out.println(senderPushToken);
 					Bodovi poklonBod = new Bodovi(poklonKod.getNumberOfPoints(), now, "Gift", receiver);
-					Bodovi bodZaPosiljaoca = new Bodovi(30, now, "Sent Gift", poklonKod.getSender());
+					int brojBodova = 0;
+					if ( poklonKod.getCode().contains("PLAMEN") ) {
+						brojBodova = 2;
+					} else {
+						brojBodova = poklonKod.getNumberOfPoints();
+					}
+					Bodovi bodZaPosiljaoca = new Bodovi(poklonKod.getNumberOfPoints(), now, "Sent Gift", poklonKod.getSender());
+					
 					poklonKod.setActivatedDate(now);
 					poklonKod.setIsValid(false);
+					sendNotification(senderPushToken, poklonKod.getNumberOfPoints());
 					poklonKodService.save(poklonKod);
 					bodoviService.save(poklonBod);
 					bodoviService.save(bodZaPosiljaoca);
@@ -258,8 +295,63 @@ public class GiftCodeController {
 				return new ResponseEntity<>(false, HttpStatus.OK);
 			}
 		} catch (Exception e) {
-			System.out.println("CATCH");
+			System.out.println("CATCH: " + e);
 			return new ResponseEntity<>(false, HttpStatus.OK);
 		}
+	}
+	
+	@GetMapping(value = "/showusers")
+	public ResponseEntity<List<KorisnikDTOWithoutPoints>> showUsersForNosacPlamena() {
+		List<Korisnik> sviKorisnici = korisnikService.findAll(); 
+		Korisnik nosacPlamena = korisnikService.findNosacPlamena();
+		sviKorisnici.remove(nosacPlamena);
+		List<KorisnikDTOWithoutPoints> dtoKorisnici = korisnikService.converToKorisnikDTOWithoutPoints(sviKorisnici);
+		return new ResponseEntity<>(dtoKorisnici, HttpStatus.OK);
+	}
+	
+	@PostMapping(value = "/nosacGenerateCode")
+	public ResponseEntity<?> nosacGenerateCode(@AuthenticationPrincipal Korisnik nosacPlamena, @RequestBody String username) {
+		if ( !nosacPlamena.isNosacPlamena() ) {
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+		}
+		Korisnik receiver = korisnikService.findKorisnikByUsername(username);
+		List<PoklonKod> poklonKodovi = poklonKodService.findPoklonKodBySenderId(receiver.getId());
+		PoklonKod poklonKod;
+		if ( poklonKodovi.size() > 0 ) {
+			 poklonKod = poklonKodovi.get(poklonKodovi.size() - 1);
+		} else {
+			poklonKod = null;
+		}
+		
+		if ( validateKod(nosacPlamena, poklonKod) ) {
+			List<String> codesList = readCode();
+			String code = generateCode(codesList, false);
+					
+			ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
+	        ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+			
+	        Random rand = new Random();
+			int randomPoints = rand.nextInt(21);
+	        
+			PoklonKod newPoklonKod = new PoklonKod(nosacPlamena, receiver, code, randomPoints, now, true);
+			PoklonKodDTO poklonKodDTO = new PoklonKodDTO(newPoklonKod);
+			poklonKodService.save(newPoklonKod);
+			return new ResponseEntity<PoklonKodDTO>(poklonKodDTO, HttpStatus.OK);
+		}
+		
+		return new ResponseEntity<PoklonKodDTO>(new PoklonKodDTO(poklonKod), HttpStatus.OK);
+		
+	}
+	
+	public void sendNotification(String pushToken, int numberOfPoints) {
+		String message = "";
+		if ( numberOfPoints >= 0 ) {
+			message = "Dobili ste " + numberOfPoints + " bod!";
+		} else {
+			message = "Izgubili ste " + numberOfPoints + " bod!";
+		}
+		if (pushToken != null) {
+            notificationService.sendPushNotificationToSender(pushToken, "Tvoj poklon kod je aktiviran! " + message);
+        }
 	}
 }

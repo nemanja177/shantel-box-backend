@@ -63,6 +63,12 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	@OneToMany(mappedBy = "korisnik", cascade = CascadeType.ALL , fetch = FetchType.EAGER)
 	private Set<Bodovi> bodovi;
 	
+	@Column(name = "expoPushToken", unique = false, nullable = true)
+    private String expoPushToken;
+	
+	@Column(name = "nosacPlamena", unique = false, nullable = false)
+	private boolean nosacPlamena;
+	
 	@ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "user_authority",
             joinColumns = @JoinColumn(name = "korisnik_id", referencedColumnName = "korisnik_id"),
@@ -97,7 +103,7 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	}
 	
 	public Korisnik(String ime, String prezime, String username, String email, String password,
-			boolean dozvoljen, String slika) {
+			boolean dozvoljen, String slika, Boolean nosacPlamena) {
 		super();
 		this.ime = ime;
 		this.prezime = prezime;
@@ -106,18 +112,32 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 		this.password = password;
 		this.dozvoljen = dozvoljen;
 		this.slika = slika;
+		this.nosacPlamena = nosacPlamena;
 	}
 	
 	public Korisnik(KorisnikDTO korisnikDTO) {
-		this.id = korisnikDTO.getId();
 		this.ime = korisnikDTO.getIme();
 		this.prezime = korisnikDTO.getPrezime();
 		this.username = korisnikDTO.getUsername();
 		this.email = korisnikDTO.getEmail();
-		this.password = korisnikDTO.getPassword();
-		this.dozvoljen = korisnikDTO.isDozvoljen();
         this.slika = korisnikDTO.getSlika();
     }
+
+	public boolean isNosacPlamena() {
+		return nosacPlamena;
+	}
+
+	public void setNosacPlamena(boolean nosacPlamena) {
+		this.nosacPlamena = nosacPlamena;
+	}
+
+	public String getExpoPushToken() {
+		return expoPushToken;
+	}
+
+	public void setExpoPushToken(String expoPushToken) {
+		this.expoPushToken = expoPushToken;
+	}
 
 	public Integer getId() {
 		return id;
@@ -175,8 +195,6 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 		this.email = email;
 	}
 	
-	
-
 	public Set<Bodovi> getBodovi() {
 		return bodovi;
 	}
@@ -184,8 +202,6 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	public void setBodovi(Set<Bodovi> bodovi) {
 		this.bodovi = bodovi;
 	}
-
-	
 
 	public String getSlika() {
 		return slika;
@@ -198,7 +214,9 @@ public class Korisnik implements Serializable, UserDetails, Comparable<Korisnik>
 	@Override
 	public String toString() {
 		return "Korisnik [id=" + id + ", ime=" + ime + ", prezime=" + prezime + ", username=" + username + ", email="
-				+ email + ", password=" + password + ", slika=" + slika + ", dozvoljen=" + dozvoljen + "]";
+				+ email + ", password=" + password + ", dozvoljen=" + dozvoljen + ", slika=" + slika + ", bodovi="
+				+ bodovi + ", expoPushToken=" + expoPushToken + ", nosacPlamena=" + nosacPlamena + ", authorities="
+				+ authorities + "]";
 	}
 
 	@JsonIgnore

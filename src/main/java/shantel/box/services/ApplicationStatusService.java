@@ -1,5 +1,6 @@
 package shantel.box.services;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface ApplicationStatusService {
 	
 	ApplicationStatus findValidAppStatus();
 	
-	ApplicationStatus checkIsAppUnlocked(Date currentDate);
+	ApplicationStatus checkIsAppUnlocked(ZonedDateTime currentDate);
 	
 	ApplicationStatus save(ApplicationStatus status);
 	

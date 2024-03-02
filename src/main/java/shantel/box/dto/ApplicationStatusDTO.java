@@ -1,6 +1,7 @@
 package shantel.box.dto;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -12,6 +13,7 @@ public class ApplicationStatusDTO {
 	
     
 	SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy. HH:mm:ss");
+	ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade");
 //	ZonedDateTime currentDateTime = ZonedDateTime.now();
 	
 //	DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -21,13 +23,16 @@ public class ApplicationStatusDTO {
 //            .toFormatter();
 	
 	private String message;
-	private String dateStart;
-	private String dateEnd;
+	private ZonedDateTime dateStart;
+	private ZonedDateTime dateEnd;
 	
 	public ApplicationStatusDTO(ApplicationStatus appStatus) {
+		
+		ZonedDateTime entityDateStart = appStatus.getDateStart().withZoneSameInstant(desiredTimeZone);
+		ZonedDateTime entityDateEnd = appStatus.getDateEnd().withZoneSameInstant(desiredTimeZone);
 		message = appStatus.getMessage();
-		dateStart = dateFormat.format(appStatus.getDateStart());
-		dateEnd = dateFormat.format(appStatus.getDateEnd());
+		dateStart = entityDateStart;
+		dateEnd = entityDateEnd;
 	}
 
 	public String getMessage() {
@@ -38,19 +43,19 @@ public class ApplicationStatusDTO {
 		this.message = message;
 	}
 
-	public String getDateStart() {
+	public ZonedDateTime getDateStart() {
 		return dateStart;
 	}
 
-	public void setDateStart(String dateStart) {
+	public void setDateStart(ZonedDateTime dateStart) {
 		this.dateStart = dateStart;
 	}
 
-	public String getDateEnd() {
+	public ZonedDateTime getDateEnd() {
 		return dateEnd;
 	}
 
-	public void setDateEnd(String dateEnd) {
+	public void setDateEnd(ZonedDateTime dateEnd) {
 		this.dateEnd = dateEnd;
 	}
 	

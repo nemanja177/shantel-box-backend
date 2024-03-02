@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import shantel.box.dto.BonusNagradeDTO;
+import shantel.box.dto.KorisnikDTO;
 import shantel.box.model.Bodovi;
 import shantel.box.model.BonusNagrade;
 import shantel.box.model.Korisnik;
@@ -67,7 +68,7 @@ public class BonusBodoviController {
 //		Korisnik sender = findCurrentKorisnik(session);
 		
 		System.out.println("----------------SENDER-----------------------");
-		System.out.println("SENDER: " + sender);
+		System.out.println("SENDER: " + sender.getIme());
 		
 		
 		// stari nacin
@@ -146,7 +147,7 @@ public class BonusBodoviController {
 		String username = userDetails.getUsername();
 		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 		System.out.println("--------------------------------------------------------------------");
-		System.out.println("RECEIVER: " + receiver);
+		System.out.println("RECEIVER: " + receiver.getIme());
 //		String username = (String) session.getAttribute(AuthenticationController.KORISNIK_KEY);
 //		Korisnik sender = korisnikService.findKorisnikByUsername(username);
 //		Korisnik sender = findCurrentKorisnik(session);
@@ -194,8 +195,10 @@ public class BonusBodoviController {
 	@GetMapping(value = "/allDailyBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllDailyBonus() {
 		
-		LocalDateTime currentDateTime = LocalDateTime.now();
-		LocalDate currentDate = currentDateTime.toLocalDate();
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); 
+		
+		ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+		LocalDate todaysDate = now.toLocalDate();
 		
 //		Date date = new Date();
 //		SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
@@ -204,7 +207,7 @@ public class BonusBodoviController {
 		Collections.reverse(sveBonusNagrade);
 		List<BonusNagradeDTO> dtoList = new ArrayList<>();
 		for (BonusNagrade nagrade: sveBonusNagrade) {
-			int comparisonResult = currentDate.compareTo(nagrade.getDate().toLocalDate());
+			int comparisonResult = todaysDate.compareTo(nagrade.getDate().withZoneSameInstant(desiredTimeZone).toLocalDate());
 			if ( comparisonResult == 0 ) {
 				dtoList.add(new BonusNagradeDTO(nagrade));
 			} 
@@ -279,11 +282,10 @@ public class BonusBodoviController {
 	@GetMapping(value = "/allYesterdayBonuses")
 	public ResponseEntity<List<BonusNagradeDTO>> getAllYesterdayBonuses() {
 		
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); 
 		
-		LocalDateTime currentDateTime = LocalDateTime.now();
-		LocalDate currentDate = currentDateTime.toLocalDate();
-		
-		LocalDate yesterday = currentDate.minusDays(1);
+		ZonedDateTime now = ZonedDateTime.now(desiredTimeZone);
+		ZonedDateTime yesterday = now.minusDays(1);
 		
 //		Calendar now = Calendar.getInstance();
 //		int brojDana = now.get(Calendar.DAY_OF_YEAR);
@@ -296,7 +298,7 @@ public class BonusBodoviController {
 		
 		for (BonusNagrade nagrade: sveBonusNagrade) {
 //			now.setTime(nagrade.getDate());
-			if ( yesterday.getDayOfYear() == nagrade.getDate().getDayOfYear() && yesterday.getYear() == nagrade.getDate().getYear()) {
+			if ( yesterday.getDayOfYear() == nagrade.getDate().withZoneSameInstant(desiredTimeZone).getDayOfYear() && yesterday.getYear() == nagrade.getDate().withZoneSameInstant(desiredTimeZone).getYear()) {
 				dtoList.add(new BonusNagradeDTO(nagrade));
 			}	
 		}
@@ -304,24 +306,29 @@ public class BonusBodoviController {
 		return new ResponseEntity<>(dtoList, HttpStatus.OK);
 	}
 	
-	@SuppressWarnings("deprecation")
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
 	@GetMapping(value = "/allMontlyBonuses")
-	public ResponseEntity<List<Korisnik>> getAllBonus() {
+	public ResponseEntity<List<KorisnikDTO>> getAllBonus() {
 		
-		LocalDateTime currentDateTime = LocalDateTime.now();
-		LocalDate currentDate = currentDateTime.toLocalDate();
+		ZoneId desiredTimeZone = ZoneId.of("Europe/Belgrade"); 
 		
-		List<Korisnik> korisnici = new ArrayList<>();
+		ZonedDateTime currentDate = ZonedDateTime.now(desiredTimeZone);
+//		ZonedDateTime yesterday = now.minusDays(1);
+		
+//		LocalDateTime currentDateTime = LocalDateTime.now();
+//		LocalDate currentDate = currentDateTime.toLocalDate();
+		
 		List<Korisnik> sviKorisnici = korisnikService.findAll();
+		List<KorisnikDTO> dtoList = new ArrayList<>();
 //		Calendar now = Calendar.getInstance();
 //		int month = now.get(Calendar.MONTH);
 		for ( Korisnik korisnik : sviKorisnici) {
+			KorisnikDTO dtoKorisnik = new KorisnikDTO(korisnik);
 			Set<Bodovi> bodovi = korisnik.getBodovi();
 			Set<Bodovi> bonusBodovi = new HashSet<>();
 			for ( Bodovi bod: bodovi ) {
 //				int isSame = currentDate.compareTo(bod.getDatumDobijanja().toLocalDate());
-				if ( bod.getDatumDobijanja().getMonth() == currentDate.getMonth() && bod.getDatumDobijanja().getYear() == currentDate.getYear() ) {
+				if ( bod.getDatumDobijanja().withZoneSameInstant(desiredTimeZone).getMonth() == currentDate.getMonth() && bod.getDatumDobijanja().withZoneSameInstant(desiredTimeZone).getYear() == currentDate.getYear() ) {
 					try {
 						if (bod.getSpecijalnaNagrada().equals("Poeni")) {
 							bonusBodovi.add(bod);
@@ -333,13 +340,13 @@ public class BonusBodoviController {
 				} 
 			}
 			
-			korisnik.setBodovi(bonusBodovi);
-			korisnici.add(korisnik);
-			Collections.sort(korisnici);
-			Collections.reverse(korisnici);
+			dtoKorisnik.setBodovi(bonusBodovi);
+			dtoList.add(dtoKorisnik);
+			Collections.sort(dtoList);
+			Collections.reverse(dtoList);
 		}
 		
-		return new ResponseEntity<>(korisnici,HttpStatus.OK);
+		return new ResponseEntity<>(dtoList,HttpStatus.OK);
 	}
 	
 //	@CrossOrigin(value = "https://kutija.net", allowCredentials = "true")
